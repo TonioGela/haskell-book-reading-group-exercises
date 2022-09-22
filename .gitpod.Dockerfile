@@ -6,5 +6,6 @@ ENV USER gitpod
 
 RUN sh <(curl -L https://nixos.org/nix/install) --no-daemon && \
     source /home/gitpod/.nix-profile/etc/profile.d/nix.sh && \
-    echo source /home/gitpod/.nix-profile/etc/profile.d/nix.sh > $HOME/.bashrc.d/nix.sh && \
-    nix-env -i stack
+    nix-env -i stack haskell-language-server
+
+ENV PATH=$HOME/.nixprofile/bin/:$PATH
