@@ -8,4 +8,4 @@ RUN sh <(curl -L https://nixos.org/nix/install) --no-daemon && \
     source /home/gitpod/.nix-profile/etc/profile.d/nix.sh && \
     nix-env -i stack haskell-language-server
 
-ENV PATH=$HOME/.nixprofile/bin/:$PATH
+ENV PATH=$HOME/.nix-profile/bin/:$PATH
