@@ -1,4 +1,10 @@
-module Main (main) where
+import Test.Hspec
+
+import qualified Ch1.Spec
 
 main :: IO ()
-main = putStrLn "Test suite not yet implemented."
+main = hspec spec
+
+spec :: Spec
+spec = do 
+    describe "Ch1" Ch1.Spec.spec
