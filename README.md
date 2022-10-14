@@ -3,7 +3,7 @@
 My solutions to the *Haskell Book* exercises.
 
 ## Using the repo
-This repo can be *"run"* with GitPod. [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/from-referrer/)
+This repo can be *"run"* with GitPod. [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/nivox/haskell-book)
 
 When opening an Haskell file for the first time VSCode will ask:
 
