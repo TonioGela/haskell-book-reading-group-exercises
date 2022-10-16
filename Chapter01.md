@@ -13,3 +13,11 @@
 A combinator is a lambda term with no free variables (cit.)
 
 correct answers are `1`, `3` and `4`
+
+### Normal form or diverge?
+
+Divergence means that the reduction process never terminates ord ends (cit.)
+
+1. `λx.xxx` -> cannot be reduced -> normal form
+2. `(λz.zz)(λy.yy)` -> `(λy.yy)(λy.yy)` -> equivalent to `(λz.zz)(λy.yy)` -> diverge
+3. `(λx.xxx)z` -> `zzz` -> cannot be reduced -> normal form
