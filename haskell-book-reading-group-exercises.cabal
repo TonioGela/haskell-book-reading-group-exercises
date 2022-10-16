@@ -1,0 +1,29 @@
+cabal-version:      3.6
+name:               haskell-book-reading-group-exercises
+version:            0.1.0.0
+license:            MIT
+author:             Andrea Vallotti
+maintainer:         andrea.vallotti@gmail.com
+build-type:         Simple
+
+library
+  hs-source-dirs:      src
+  exposed-modules:
+    ItWorks
+  build-depends:
+      base
+  default-language:    Haskell2010
+
+test-suite haskell-book-reading-group-exercises-test
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  other-modules:
+    Spec.ItWorksSpec
+  build-depends:
+      base
+    , haskell-book-reading-group-exercises
+    , hspec
+    , hspec-discover
+    , QuickCheck
+  default-language:    Haskell2010
