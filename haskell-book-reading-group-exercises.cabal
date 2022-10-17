@@ -10,6 +10,7 @@ library
   hs-source-dirs:      src
   exposed-modules:
     ItWorks
+    Chapter02
   build-depends:
       base
   default-language:    Haskell2010
@@ -20,6 +21,7 @@ test-suite haskell-book-reading-group-exercises-test
   main-is:             Spec.hs
   other-modules:
     Spec.ItWorksSpec
+    Spec.Chapter02Spec
   build-depends:
       base
     , haskell-book-reading-group-exercises
