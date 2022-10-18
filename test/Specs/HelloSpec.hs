@@ -1,10 +1,7 @@
 
-module Core.Spec where
+module Specs.HelloSpec (spec) where
 
 import Test.Hspec
-
-main :: IO ()
-main = hspec spec
 
 spec :: Spec
 spec = do 
