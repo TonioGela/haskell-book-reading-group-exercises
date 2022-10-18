@@ -1,11 +1,10 @@
-
 module Specs.Ch02Spec (spec) where
 
+import Ch02 (half, piCalc1, piCalc2, square)
 import Test.Hspec
-import Ch02 (half, square, piCalc1, piCalc2)
 
 spec :: Spec
-spec = do 
+spec = do
   describe "2.5 Evaluation" $ do
     describe "#half" $ do
       it "half 10" $ do
@@ -28,7 +27,7 @@ spec = do
         piCalc1 2 `shouldBe` 3.14 * (2 * 2)
       it "3.14 * (4 * 4)" $ do
         piCalc1 4 `shouldBe` 3.14 * (4 * 4)
-     
+
     describe "#piCalc2" $ do
       it "3.14 * (5 * 5)" $ do
         piCalc2 5 `shouldBe` pi * (5 * 5)
@@ -39,14 +38,13 @@ spec = do
       it "3.14 * (4 * 4)" $ do
         piCalc2 4 `shouldBe` pi * (4 * 4)
 
-
   describe "2.6 Infix operators" $ do
-      it "1." $ do
-        8 + 7 * 9 `shouldNotBe` (8 + 7) * 9
-      it "2." $ do
-        let x = 1
-        let y = 2
-        (x*2)+(y*2) `shouldBe` x * 2 + y * 2
-      it "3." $ do
-        let x = 1
-        x/2+9 `shouldNotBe` x / (2 + 9)
+    it "1." $ do
+      8 + 7 * 9 `shouldNotBe` (8 + 7) * 9
+    it "2." $ do
+      let x = 1
+      let y = 2
+      (x * 2) + (y * 2) `shouldBe` x * 2 + y * 2
+    it "3." $ do
+      let x = 1
+      x / 2 + 9 `shouldNotBe` x / (2 + 9)

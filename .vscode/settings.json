@@ -1,7 +1,8 @@
 {
-    "haskell.formattingProvider": "stylish-haskell",
+    "haskell.formattingProvider": "ormolu",
     "haskell.manageHLS": "GHCup",
     "haskell.serverEnvironment": {
         "PATH": "${HOME}/.ghcup/bin:/opt/homebrew/Cellar/llvm@12/12.0.1_1/bin:$PATH"
-      }
+      },
+      "editor.formatOnSave": true
 }
