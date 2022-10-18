@@ -6,9 +6,9 @@ author:             David Saitta
 maintainer:         david.saitta@gmail.com
 build-type:         Simple
 
-library
+library 
   hs-source-dirs:      src
-  exposed-modules:     Core
+  exposed-modules:     Core, Ch02
   build-depends:       base
   default-language:    Haskell2010
   ghc-options: -fllvm 
