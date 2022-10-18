@@ -13,13 +13,6 @@ library
   default-language:    Haskell2010
   ghc-options: -fllvm 
 
-executable haskell-book-reading-group-exercises
-    hs-source-dirs:   app
-    main-is:          Main.hs
-    build-depends:    base, haskell-book-reading-group-exercises
-    default-language: Haskell2010
-    ghc-options: -fllvm 
-
 test-suite haskell-book-reading-group-exercises-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
