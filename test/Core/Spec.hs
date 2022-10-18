@@ -1,5 +1,5 @@
 
-module Ch1.Spec where
+module Core.Spec where
 
 import Test.Hspec
 
