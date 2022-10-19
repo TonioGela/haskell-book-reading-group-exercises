@@ -1,16 +1,16 @@
 ## 2.6 Infix operators
 
-### Excercises: Parentheses and association
+### Exercises: Parentheses and association
 
 1. `8 + 7 * 9` differs from `(8 + 7) * 9`, the former evaluates to `71`, the latter to `135`
-2. `permiter x y = (x * 2) + (y * 2)` is equivalent to `permiter x y = x * 2 + y * 2` because `*` has higher precedence than `+`
+2. `perimeter x y = (x * 2) + (y * 2)` is equivalent to `perimeter x y = x * 2 + y * 2` because `*` has higher precedence than `+`
 3. `f x = x / 2 + 9` differs from `f x = x / (2 + 9)` because `+` has a lower precedence than `/`
 
 ## 2.7 Declaring values
 
-### Excercises: Heal the sick
+### Exercises: Heal the sick
 
-1. error laoding file in GHCi
+1. error loading file in GHCi
 
 ```
 src/Chapter02.hs:10:1: error:
@@ -36,7 +36,7 @@ src/Chapter02.hs:10:1: error:
    | ^^^^^^^^^^^^^^^^^^^^^^^^
 ```
 
-2. error laoding file in GHCi
+2. error loading file in GHCi
 
 ```
 src/Chapter02.hs:12:12: error: Variable not in scope: b
@@ -45,7 +45,7 @@ src/Chapter02.hs:12:12: error: Variable not in scope: b
    |            ^
 ```
 
-3. error laoding file in GHCi
+3. error loading file in GHCi
 
 ```
 src/Chapter02.hs:15:4: error:
@@ -59,7 +59,7 @@ src/Chapter02.hs:15:4: error:
 
 ## 2.10 `let` and `where`
 
-### Excercises: A head code
+### Exercises: A head code
 
 1. `let x = 5 in x` -> evaluates to `5`
 1. `let x = 5 in x * x` -> evaluates to `25`
