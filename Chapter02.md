@@ -73,3 +73,11 @@ src/Chapter02.hs:15:4: error:
 1. `2 + 2 * 3 - 1` <-> `2 + (2 * 3) - 1`
 1. `(^) 10 $ 1 + 1` <-> `(^) 10 (1 + 1)`
 1. `2 ^ 2 * 4 ^ 5 + 1` <-> `((2 ^ 2) * (4 ^ 5)) + 1`
+
+### Equivalent expressions
+
+1. `1 + 1` and `2` will return the same result
+1. `10 ^ 2` and `10 + 9 * 10` will return the same result
+1. `400 - 37` and `(-) 37 400` will **not** return the same result
+1. `` 100 `div` 3 `` and `100 / 3` will **not** return the same result
+1. `2 * 5 + 18` and `2 * (5 + 18)` will **not** return the same result
