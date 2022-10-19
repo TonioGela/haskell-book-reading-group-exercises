@@ -65,3 +65,11 @@ src/Chapter02.hs:15:4: error:
 1. `let x = 5 in x * x` -> evaluates to `25`
 1. `let x = 5; y = 6 in x * y` -> evaluates to `30`
 1. `let x = 3; y = 1000 in x + 3` -> evaluates to `6`
+
+## 2.11 Chapter exercises
+
+### Parenthesization
+
+1. `2 + 2 * 3 - 1` <-> `2 + (2 * 3) - 1`
+1. `(^) 10 $ 1 + 1` <-> `(^) 10 (1 + 1)`
+1. `2 ^ 2 * 4 ^ 5 + 1` <-> `((2 ^ 2) * (4 ^ 5)) + 1`
