@@ -28,5 +28,11 @@ Determine whether each of the following expressions can be reduced to a normal f
 
 Evaluate (that is, beta reduce) each of the following expressions to normal form. We strongly recommend writing out the steps on paper with a pen or pencil
 
-1. ![alt text](http://url/to/img.png)
 
+1. ![ex 1](https://github.com/TonioGela/haskell-book-reading-group-exercises/raw/fnurglewitz/ch01/1.jpeg)
+2. ![ex 1](https://github.com/TonioGela/haskell-book-reading-group-exercises/raw/fnurglewitz/ch01/2.jpeg)
+3. ![ex 1](https://github.com/TonioGela/haskell-book-reading-group-exercises/raw/fnurglewitz/ch01/3.jpeg)
+4. ![ex 1](https://github.com/TonioGela/haskell-book-reading-group-exercises/raw/fnurglewitz/ch01/4.jpeg)
+5. ![ex 1](https://github.com/TonioGela/haskell-book-reading-group-exercises/raw/fnurglewitz/ch01/5.jpeg)
+6. ![ex 1](https://github.com/TonioGela/haskell-book-reading-group-exercises/raw/fnurglewitz/ch01/6.jpeg)
+7. ![ex 1](https://github.com/TonioGela/haskell-book-reading-group-exercises/raw/fnurglewitz/ch01/7.jpeg)
