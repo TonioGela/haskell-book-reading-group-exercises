@@ -81,3 +81,28 @@ src/Chapter02.hs:15:4: error:
 1. `400 - 37` and `(-) 37 400` will **not** return the same result
 1. `` 100 `div` 3 `` and `100 / 3` will **not** return the same result
 1. `2 * 5 + 18` and `2 * (5 + 18)` will **not** return the same result
+
+### More fun with functions
+
+```
+ghci> z=7
+ghci> y=z+8
+ghci> x=y^2
+ghci> waxOn=x*5
+ghci> waxOn
+1125
+```
+
+1. what do you think will happen if you enter:
+
+- `10 + waxOn` -> `1135`
+- `(+10) waxOn` -> `1135`
+- `(-) 15 waxOn` -> `-1110`
+- `(-) waxOn 15` -> `1110`
+
+3. `triple waxOn` -> multiply `waxOn` by `3` -> `3375`
+
+4. `waxOff`
+
+- `waxOff 10` -> `30`
+- `waxOff (-50)` -> `-150`
