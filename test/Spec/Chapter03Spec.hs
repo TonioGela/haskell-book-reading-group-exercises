@@ -21,3 +21,6 @@ spec =
           drop9 "Curry is awesome!" `shouldBe` "awesome!"
         it "drop 9 chars again" $ do
           drop9 "Andrea" `shouldBe` ""
+      describe "thirdLetter" $ do
+        it "get 3rd char" $ do
+          thirdLetter "Curry is awesome!" `shouldBe` 'r'
