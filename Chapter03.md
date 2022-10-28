@@ -2,18 +2,18 @@
 
 ### Exercises: Scope
 
-1. Yes, `y` is in scope
-1. No, `h` is _not_ in scope
-1. No, `d` is _not_ in scope for `r`
-1. Yes, everything is in scope
+1. ✅ `y` is in scope
+1. ❌ `h` is _not_ in scope
+1. ❌ `d` is _not_ in scope for `r`
+1. ✅ everything is in scope
 
 ## 3.5 Types of concatenation functions
 
 ### Exercises: Syntax errors
 
-1. `++ [1, 2, 3] [4, 5, 6]` does _not_ compile because `++` is used as prefix operator without `()` -> `(++) [1, 2, 3] [4, 5, 6]`
-1. `'<3' ++ ' Haskell'` does _not_ compile because `'` is used instead of `"` for literal strings -> `"<3" ++ " Haskell"`
-1. `concat ["<3", " Haskell"]` compiles because strings are lists of chars
+1. ❌ `++ [1, 2, 3] [4, 5, 6]` does _not_ compile because `++` is used as prefix operator without `()` -> `(++) [1, 2, 3] [4, 5, 6]`
+1. ❌ `'<3' ++ ' Haskell'` does _not_ compile because `'` is used instead of `"` for literal strings -> `"<3" ++ " Haskell"`
+1. ✅ `concat ["<3", " Haskell"]` compiles because strings are lists of chars
 
 ## 3.8 Chapter exercises
 
