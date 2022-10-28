@@ -29,3 +29,6 @@ spec =
           letterIndex 2 `shouldBe` 'r'
         it "gets letter at another index" $ do
           letterIndex 9 `shouldBe` 'a'
+      describe "rvrs" $ do
+        it "revers \"Curry is awesome\" sentence" $ do
+          rvrs "Curry is awesome" `shouldBe` "awesome is Curry"
