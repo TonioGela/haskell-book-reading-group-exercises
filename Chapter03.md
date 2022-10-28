@@ -46,6 +46,18 @@
 
 </lettered>
 
+### Building functions
+
+#### 1.
+
+<lettered>
+
+1. `"Curry is awesome" ++ "!"`
+1. `"Curry is awesome!" !! 4`
+1. `drop 9 "Curry is awesome!"`
+
+</lettered>
+
 <style type="text/css">
     lettered ol { list-style-type: upper-alpha; }
 </style>
