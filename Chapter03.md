@@ -34,6 +34,18 @@
 
 </lettered>
 
+#### 2.
+
+<lettered>
+
+1. `concat [[1 * 6], [2 * 6], [3 * 6]]` -> `[6, 12, 18]`
+1. `"rain" ++ drop 2 "elbow"` -> `"rainbow"`
+1. `10 * head [1, 2, 3]` -> `10`
+1. `(take 3 "Julie") ++ (tail "yes")` -> `"Jules"`
+1. `concat [tail [1, 2, 3], tail [4, 5, 6], tail [7, 8, 9]]` -> `[2, 3, 5, 6, 8, 9]`
+
+</lettered>
+
 <style type="text/css">
     lettered ol { list-style-type: upper-alpha; }
 </style>
