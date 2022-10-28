@@ -22,5 +22,10 @@ spec =
         it "drops 9 chars again" $ do
           drop9 "Andrea" `shouldBe` ""
       describe "thirdLetter" $ do
-        it "get 3rd char" $ do
+        it "gets 3rd char" $ do
           thirdLetter "Curry is awesome!" `shouldBe` 'r'
+      describe "letterIndex" $ do
+        it "gets letter at given index" $ do
+          letterIndex 2 `shouldBe` 'r'
+        it "gets letter at another index" $ do
+          letterIndex 9 `shouldBe` 'a'
