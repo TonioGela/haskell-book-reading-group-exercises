@@ -14,3 +14,26 @@
 1. `++ [1, 2, 3] [4, 5, 6]` does _not_ compile because `++` is used as prefix operator without `()` -> `(++) [1, 2, 3] [4, 5, 6]`
 1. `'<3' ++ ' Haskell'` does _not_ compile because `'` is used instead of `"` for literal strings -> `"<3" ++ " Haskell"`
 1. `concat ["<3", " Haskell"]` compiles because strings are lists of chars
+
+## 3.8 Chapter exercises
+
+### Reading syntax
+
+#### 1.
+
+<lettered>
+
+1. `concat [[1, 2, 3], [4, 5, 6]]` ✅ -> `[1, 2, 3, 4, 5, 6]`
+1. `++ [1, 2, 3] [4, 5, 6]` ❌, fix `(++) [1, 2, 3] [4, 5, 6]` -> `[1, 2, 3, 4, 5, 6]`
+1. `(++) "hello" " world"` ✅ -> `"hello world"`
+1. `["hello" ++ " world]` ❌, fix `["hello" ++ " world"]` -> `["hello world"]`
+1. `4 !! "hello"` ❌, fix `"hello" !! 4` -> `'o'`
+1. `(!!) "hello" 4` ✅ -> `'o'`
+1. `take "4 lovely"` ❌, fix `take 4 "lovely"` -> `"love"`
+1. `take 3 "awesome"` ✅ -> `"awe"`
+
+</lettered>
+
+<style type="text/css">
+    lettered ol { list-style-type: upper-alpha; }
+</style>
