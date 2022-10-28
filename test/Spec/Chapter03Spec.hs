@@ -6,20 +6,20 @@ import Test.Hspec (describe, it, shouldBe)
 spec =
   describe "Chapter 03" $ do
     describe "building functions" $ do
-      describe "fa" $ do
-        it "append !" $ do
+      describe "appendExclamation" $ do
+        it "appends !" $ do
           appendExclamation "Curry is awesome" `shouldBe` "Curry is awesome!"
-        it "append ! again" $ do
+        it "appends ! again" $ do
           appendExclamation "Andrea" `shouldBe` "Andrea!"
-      describe "fb" $ do
-        it "get 5th char" $ do
+      describe "get5th" $ do
+        it "gets 5th char" $ do
           get5th "Curry is awesome!" `shouldBe` 'y'
-        it "get 5th char again" $ do
+        it "gets 5th char again" $ do
           get5th "Andrea" `shouldBe` 'e'
-      describe "fc" $ do
-        it "drop 9 chars" $ do
+      describe "drop9" $ do
+        it "drops 9 chars" $ do
           drop9 "Curry is awesome!" `shouldBe` "awesome!"
-        it "drop 9 chars again" $ do
+        it "drops 9 chars again" $ do
           drop9 "Andrea" `shouldBe` ""
       describe "thirdLetter" $ do
         it "get 3rd char" $ do
