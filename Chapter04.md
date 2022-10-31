@@ -41,3 +41,10 @@
 1. see [source code](./src/Chapter04/exercises.hs)
 1. see [source code](./src/Chapter04/exercises.hs)
 1. see [source code](./src/Chapter04/exercises.hs)
+
+### Match the function names to their types
+
+1. `c`
+1. `b`
+1. `a`
+1. `d`
