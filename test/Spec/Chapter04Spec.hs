@@ -10,3 +10,8 @@ spec =
         isPalindrome "abba" `shouldBe` True
       it "returns False" $ do
         isPalindrome "Andrea" `shouldBe` False
+    describe "myAbs" $ do
+      it "keeps positive integers" $ do
+        myAbs 42 `shouldBe` 42
+      it "return opposite of negative integers" $ do
+        myAbs (-42) `shouldBe` 42
