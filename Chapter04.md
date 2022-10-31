@@ -32,3 +32,9 @@
 1. types and results:
    1. `x = 5`
    1. `x + 3 == 5`, type `Bool`, result `False`
+1. results:
+   1. ✅ `length allAwesome == 2` -> `True`
+   1. ❌ `length [1, 'a', 3, 'b']`, elements in the list have different types
+   1. ✅ `length allAwesome + length awesome` -> `5`
+   1. ✅ `(8 == 8) && ('b' < 'a')` -> `False`
+   1. ❌ `(8 == 8) && 9`, `9` is _not_ a `Bool` and `&&` works with `Bool` parameters
