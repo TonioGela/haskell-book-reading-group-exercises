@@ -21,3 +21,8 @@
 ## 4.9 Chapter exercises
 
 1. `length :: [a] -> Integer`, from GHCi `length :: Foldable t => t a -> Int`
+1. results:
+   1. `length [1, 2, 3, 4, 5]` -> `5`
+   1. `length [(1, 2), (2, 3), (3, 4)]` -> `3`
+   1. `length allAwesome` -> `2`
+   1. `length (concat allAwesome)` -> `5`
