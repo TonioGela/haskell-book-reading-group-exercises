@@ -17,3 +17,7 @@
 1. ✅ `(1 * 2) > 5`
 1. ❌ `[Merry] > [Happy]`, double quote delimiters are missing. Fixes `"Merry" > "Happy"`, or `["Merry"] > ["Happy"]`
 1. ❌ `[1, 2, 3] ++ "look at me!"`, cannot concatenate lists w/ different types. Fix `['1', '2', '3'] ++ "look at me!"`
+
+## 4.9 Chapter exercises
+
+1. `length :: [a] -> Integer`, from GHCi `length :: Foldable t => t a -> Int`
