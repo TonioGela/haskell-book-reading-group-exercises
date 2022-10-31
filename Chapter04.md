@@ -40,3 +40,4 @@
    1. ❌ `(8 == 8) && 9`, `9` is _not_ a `Bool` and `&&` works with `Bool` parameters
 1. see [source code](./src/Chapter04/exercises.hs)
 1. see [source code](./src/Chapter04/exercises.hs)
+1. see [source code](./src/Chapter04/exercises.hs)

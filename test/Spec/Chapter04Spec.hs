@@ -15,3 +15,6 @@ spec =
         myAbs 42 `shouldBe` 42
       it "return opposite of negative integers" $ do
         myAbs (-42) `shouldBe` 42
+    describe "f" $ do
+      it "does something" $ do
+        f ("a", 4) (42, "d") `shouldBe` ((4, "d"), ("a", 42))
