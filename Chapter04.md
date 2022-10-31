@@ -27,3 +27,4 @@
    1. `length allAwesome` -> `2`
    1. `length (concat allAwesome)` -> `5`
 1. `6 / length [1, 2, 3]` returns an error because the return type of `length` is `Int` which doesn't implement `Fractional` type class
+1. `` 6 `div` length [1, 2, 3] ``
