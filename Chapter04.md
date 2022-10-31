@@ -38,3 +38,4 @@
    1. ✅ `length allAwesome + length awesome` -> `5`
    1. ✅ `(8 == 8) && ('b' < 'a')` -> `False`
    1. ❌ `(8 == 8) && 9`, `9` is _not_ a `Bool` and `&&` works with `Bool` parameters
+1. see [source code](./src/Chapter04/exercises.hs)
