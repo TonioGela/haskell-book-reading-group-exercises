@@ -10,6 +10,15 @@ allAwesome = [awesome, also]
 isPalindrome :: Eq a => [a] -> Bool
 isPalindrome x = x == reverse x
 
+isPalindromeOptimized :: Eq a => [a] -> Bool
+isPalindromeOptimized xs = go [] 0 xs
+  where
+    good n f = and . zipWith (==) xs . take (f $ div n 2)
+    go ys n (x : xs) = go (x : ys) (succ n) xs
+    go ys n []
+      | even n = good n id ys
+      | otherwise = good n pred ys
+
 -- 9.
 myAbs :: Integer -> Integer
 myAbs x = if x < 0 then (-x) else x

@@ -33,3 +33,16 @@ test-suite haskell-book-reading-group-exercises-test
     , hspec-discover
     , QuickCheck
   default-language:    Haskell2010
+
+executable performance-chapter04
+  hs-source-dirs:      src
+  main-is:             Chapter04/performance.hs
+  other-modules:
+    Chapter04.Exercises
+  build-depends:
+      base
+    , haskell-book-reading-group-exercises
+    , string-random
+  default-language:    Haskell2010
+  ghc-options:
+    -fprof-auto
