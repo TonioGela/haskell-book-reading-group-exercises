@@ -1,0 +1,32 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.7.
+--
+-- see: https://github.com/sol/hpack
+
+name:           chapter05
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/nivox/haskellbook#readme>
+homepage:       https://github.com/nivox/haskellbook#readme
+bug-reports:    https://github.com/nivox/haskellbook/issues
+author:         Andrea Zito
+maintainer:     zito.andrea@gmail.com
+copyright:      2022 Andrea Zito
+license:        BSD3
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/nivox/haskellbook
+
+library
+  exposed-modules:
+      Chapter05
+  other-modules:
+      Paths_chapter05
+  hs-source-dirs:
+      src/
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-type-defaults
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
