@@ -1,0 +1,4 @@
+cradle:
+  stack:
+    - path: "./chapter06/Chapter06.hs"
+      component: "tonioGela:lib"
