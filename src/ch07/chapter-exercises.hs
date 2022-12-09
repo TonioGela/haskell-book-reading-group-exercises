@@ -7,11 +7,27 @@ module Ch07.ChapterExercises where
 --    f 1 :: Num a, Ord a => a -> Bool 
 -- 4. A function with the type (a -> b) -> c is a higher-order function
 
+-- Let’s write code
 tensDigit :: Integral a => a -> a
 tensDigit x = d
   where
     xLast = x `div` 10
     d = xLast `mod` 10
 
-tensDigit :: Integral a => a -> a
-tensDigit x = snd . divMod x $ 10
+tensDigit' :: Integral a => a -> a
+tensDigit' x = snd . divMod x $ 10
+
+foldBoolCase :: a -> a -> Bool -> a
+foldBoolCase a b c =
+  case c of
+    True -> b
+    False -> a
+
+foldBoolGuard :: a -> a -> Bool -> a
+foldBoolGuard a b c
+  | c == True = b
+  | c == False = a
+
+g :: (a -> b) -> (a, c) -> (b, c)
+g aToB (a, c) = (aToB a, c)
+g' aToB (a, c) = (,) c . aToB $ a 
