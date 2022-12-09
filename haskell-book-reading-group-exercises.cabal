@@ -17,7 +17,6 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    CHANGELOG.md
 
 source-repository head
   type: git
@@ -27,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+      MyPrelude
   other-modules:
       Paths_haskell_book_reading_group_exercises
   hs-source-dirs:
