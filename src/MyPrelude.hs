@@ -74,3 +74,19 @@ mySplitAt :: Int -> [a] -> ([a], [a])
 mySplitAt 0 (a:as) = ([], as)
 mySplitAt 1 (a:as) = ([a], as)
 mySplitAt n (a:as) = ([a] ++ fst (mySplitAt (n - 1) as), snd (mySplitAt (n - 1) as))
+
+-- same as takeWhile
+myTakeWhile :: (a -> Bool) -> [a] -> [a]
+myTakeWhile f [] = []
+myTakeWhile f (a:as)
+  | fa = [a] ++ myTakeWhile f as
+  | otherwise = []
+  where fa = f a
+
+-- same as dropWhile
+myDropWhile :: (a -> Bool) -> [a] -> [a]
+myDropWhile f [] = []
+myDropWhile f (a:as)
+  | fa = myDropWhile f as
+  | otherwise = a:as
+  where fa = f a
