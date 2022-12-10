@@ -58,3 +58,19 @@ myFilter f (a:as)
   | toBeFiltered = [a] ++ (myFilter f as)
   | not toBeFiltered = myFilter f as
   where toBeFiltered = f a
+
+-- same as take function
+myTake :: Int -> [a] -> [a]
+myTake 0 _ = []
+myTake n (a:as) = [a] ++ myTake (n - 1) as
+
+-- same as drop function
+myDrop :: Int -> [a] -> [a]
+myDrop 0 a = a
+myDrop n (a:as) = myDrop (n - 1) as
+
+-- same as splitAt function
+mySplitAt :: Int -> [a] -> ([a], [a])
+mySplitAt 0 (a:as) = ([], as)
+mySplitAt 1 (a:as) = ([a], as)
+mySplitAt n (a:as) = ([a] ++ fst (mySplitAt (n - 1) as), snd (mySplitAt (n - 1) as))
