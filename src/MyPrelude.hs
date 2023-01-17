@@ -2,6 +2,8 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 module MyPrelude where
 
+import Prelude hiding (foldl)
+
 -- same as head
 myHead :: [a] -> a
 myHead (a:_) = a
@@ -101,3 +103,21 @@ myElem _ [] = False
 myElem v (a:as)
   | v == a = True
   | otherwise = myElem v as
+
+myZip :: [a] -> [b] -> [(a, b)]
+myZip [] _ = []
+myZip _ [] = []
+myZip (a:as) (b:bs) = (a, b):(myZip as bs)
+
+myZipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+myZipWith _ [] _ = []
+myZipWith _ _ [] = []
+myZipWith f (a:as) (b:bs) = f a b:myZipWith f as bs
+
+myFoldr :: (a -> b -> b) -> b -> [a] -> b
+myFoldr f i [] = i
+myFoldr f i (a:as) = f a (myFoldr f i as)
+
+myFoldl :: (b -> a -> b) -> b -> [a] -> b
+myFoldl f i [] = i
+myFoldl f i (a:as) = f (myFoldl f i as) a
