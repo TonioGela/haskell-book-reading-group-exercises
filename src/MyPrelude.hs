@@ -2,122 +2,123 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 module MyPrelude where
 
-import Prelude hiding (foldl)
+import Prelude hiding (
+  (++),
+  (!!),
+  head,
+  last,
+  tail,
+  init,
+  null,
+  length,
+  reverse,
+  map,
+  filter,
+  take,
+  drop,
+  takeWhile,
+  dropWhile,
+  splitAt,
+  elem,
+  zip,
+  zipWith,
+  foldr,
+  foldl)
 
--- same as head
-myHead :: [a] -> a
-myHead (a:_) = a
+(++) :: [a] -> [a] -> [a]
+(++) [] b = b
+(++) (a:as) b = a : (as ++ b)
 
--- same as last
-myLast :: [a] -> a
-myLast [a] = a
-myLast (_:as) = myLast as
+(!!) :: [a] -> Int -> a
+(!!) (a:_) 0 = a
+(!!) (_:as) b = as !! (b - 1)
 
--- same as tail
-myTail :: [a] -> [a]
-myTail (_:as) = as
+head :: [a] -> a
+head (a:_) = a
 
--- same as (++)
-(+++) :: [a] -> [a] -> [a]
-(+++) [] b = b
-(+++) (a:as) b = a : (as +++ b)
+last :: [a] -> a
+last [a] = a
+last (_:as) = last as
 
--- same as init
-myInit :: [a] -> [a]
-myInit [_] = []
-myInit (a:as) = a:myInit as
+tail :: [a] -> [a]
+tail (_:as) = as
 
--- same as (!!)
-(!!!) :: [a] -> Int -> a
-(!!!) (a:_) 0 = a
-(!!!) (_:as) b = as !!! (b - 1)
+init :: [a] -> [a]
+init [_] = []
+init (a:as) = a:init as
 
--- same as null
-myNull :: [a] -> Bool
-myNull [] = True
-myNull _ = False
+null :: [a] -> Bool
+null [] = True
+null _ = False
 
--- same as length
-myLength :: [a] -> Int
-myLength [] = 0
-myLength a = go a 0
+length :: [a] -> Int
+length [] = 0
+length a = go a 0
   where
     go [_] len = len + 1
     go (_:as) len = go as (len + 1)
 
--- same as reverse
-myReverse :: [a] -> [a]
-myReverse = go []
+reverse :: [a] -> [a]
+reverse = go []
   where
     go acc [] = acc
     go acc (x:xs) = go (x:acc) xs
 
--- same as map
-myMap :: (a -> b) -> [a] -> [b]
-myMap _ [] = []
-myMap f (a:as) = f a:myMap f as
+map :: (a -> b) -> [a] -> [b]
+map _ [] = []
+map f (a:as) = f a:map f as
 
---same as filter
-myFilter :: (a -> Bool) -> [a] -> [a]
-myFilter _ [] = []
-myFilter f (a:as)
-  | toBeFiltered = a:myFilter f as
-  | otherwise = myFilter f as
-  where toBeFiltered = f a
+filter :: (a -> Bool) -> [a] -> [a]
+filter _ [] = []
+filter f (a:as)
+  | f a = a:filter f as
+  | otherwise = filter f as
 
--- same as take
-myTake :: Int -> [a] -> [a]
-myTake 0 _ = []
-myTake n (a:as) = a:myTake (n - 1) as
+take :: Int -> [a] -> [a]
+take 0 _ = []
+take n (a:as) = a:take (n - 1) as
 
--- same as drop
-myDrop :: Int -> [a] -> [a]
-myDrop 0 a = a
-myDrop n (_:as) = myDrop (n - 1) as
+drop :: Int -> [a] -> [a]
+drop 0 a = a
+drop n (_:as) = drop (n - 1) as
 
--- same as splitAt
-mySplitAt :: Int -> [a] -> ([a], [a])
-mySplitAt 0 as = ([], as)
-mySplitAt n (a:as) = (a:fst nextSplit, snd nextSplit)
-  where nextSplit = mySplitAt (n - 1) as
+splitAt :: Int -> [a] -> ([a], [a])
+splitAt 0 as = ([], as)
+splitAt n (a:as) = (a:fst nextSplit, snd nextSplit)
+  where nextSplit = splitAt (n - 1) as
 
--- same as takeWhile
-myTakeWhile :: (a -> Bool) -> [a] -> [a]
-myTakeWhile _ [] = []
-myTakeWhile f (a:as)
-  | fa = a:myTakeWhile f as
+takeWhile :: (a -> Bool) -> [a] -> [a]
+takeWhile _ [] = []
+takeWhile f (a:as)
+  | f a = a:takeWhile f as
   | otherwise = []
-  where fa = f a
 
--- same as dropWhile
-myDropWhile :: (a -> Bool) -> [a] -> [a]
-myDropWhile _ [] = []
-myDropWhile f (a:as)
-  | fa = myDropWhile f as
+dropWhile :: (a -> Bool) -> [a] -> [a]
+dropWhile _ [] = []
+dropWhile f (a:as)
+  | f a = dropWhile f as
   | otherwise = a:as
-  where fa = f a
 
--- same as elem
-myElem :: Eq a => a -> [a] -> Bool
-myElem _ [] = False
-myElem v (a:as)
+elem :: Eq a => a -> [a] -> Bool
+elem _ [] = False
+elem v (a:as)
   | v == a = True
-  | otherwise = myElem v as
+  | otherwise = elem v as
 
-myZip :: [a] -> [b] -> [(a, b)]
-myZip [] _ = []
-myZip _ [] = []
-myZip (a:as) (b:bs) = (a, b):(myZip as bs)
+zip :: [a] -> [b] -> [(a, b)]
+zip [] _ = []
+zip _ [] = []
+zip (a:as) (b:bs) = (a, b):(zip as bs)
 
-myZipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
-myZipWith _ [] _ = []
-myZipWith _ _ [] = []
-myZipWith f (a:as) (b:bs) = f a b:myZipWith f as bs
+zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+zipWith _ [] _ = []
+zipWith _ _ [] = []
+zipWith f (a:as) (b:bs) = f a b:zipWith f as bs
 
-myFoldr :: (a -> b -> b) -> b -> [a] -> b
-myFoldr f i [] = i
-myFoldr f i (a:as) = f a (myFoldr f i as)
+foldr :: (a -> b -> b) -> b -> [a] -> b
+foldr f i [] = i
+foldr f i (a:as) = f a (foldr f i as)
 
-myFoldl :: (b -> a -> b) -> b -> [a] -> b
-myFoldl f i [] = i
-myFoldl f i (a:as) = f (myFoldl f i as) a
+foldl :: (b -> a -> b) -> b -> [a] -> b
+foldl f i [] = i
+foldl f i (a:as) = f (foldl f i as) a
