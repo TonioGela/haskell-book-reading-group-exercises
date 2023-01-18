@@ -11,6 +11,8 @@ import Prelude hiding (
   init,
   null,
   length,
+  concat,
+  concatMap,
   reverse,
   map,
   filter,
@@ -57,6 +59,14 @@ length a = go a 0
   where
     go [_] len = len + 1
     go (_:as) len = go as (len + 1)
+
+concat :: [[a]] -> [a]
+concat [] = []
+concat (a:as) = a ++ concat as
+
+concatMap :: (a -> [b]) -> [a] -> [b]
+concatMap _ [] = []
+concatMap f (a:as) = (f a) ++ (concatMap f as)
 
 reverse :: [a] -> [a]
 reverse = go []
