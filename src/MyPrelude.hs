@@ -22,6 +22,9 @@ import Prelude hiding (
   dropWhile,
   splitAt,
   elem,
+  compare,
+  maximum,
+  minimum,
   zip,
   zipWith,
   foldr,
@@ -114,6 +117,38 @@ elem _ [] = False
 elem v (a:as)
   | v == a = True
   | otherwise = elem v as
+
+compare :: (Ord a) => a -> a -> Ordering
+compare a b
+  | a > b     = GT
+  | a < b     = LT
+  | otherwise = EQ
+
+maximum :: Ord a => [a] -> a
+maximum [] = undefined
+maximum (a:b:[])
+  | compared == GT = a
+  | compared == LT = b
+  | otherwise = a
+  where compared = compare a b
+maximum (a:b:as)
+  | compared == GT = maximum (a:as)
+  | compared == LT = maximum (b:as)
+  | otherwise = maximum (a:as)
+  where compared = compare a b
+
+minimum :: Ord a => [a] -> a
+minimum [] = undefined
+minimum (a:b:[])
+  | compared == GT = b
+  | compared == LT = a
+  | otherwise = a
+  where compared = compare a b
+minimum (a:b:as)
+  | compared == GT = minimum (b:as)
+  | compared == LT = minimum (a:as)
+  | otherwise = minimum (a:as)
+  where compared = compare a b
 
 zip :: [a] -> [b] -> [(a, b)]
 zip [] _ = []
