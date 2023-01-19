@@ -75,6 +75,35 @@ myConcatMap f (a:as) = (f a) ++ (myConcatMap f as)
 -- squishAgain is the same as concat function
 concatAgain = myConcat
 
-
 myMaximumBy :: (a -> a -> Ordering) -> [a] -> a
--- THIS IS WIP
+myMaximumBy _ [] = undefined
+myMaximumBy f (a:b:[])
+  | compared == GT   = a
+  | compared == LT   = b
+  | otherwise        = a
+  where compared = f a b
+
+myMaximumBy f (a:b:as)
+  | compared == GT   = myMaximumBy f (a:as)
+  | compared == LT   = myMaximumBy f (b:as)
+  | otherwise        = myMaximumBy f (a:as)
+  where compared = f a b
+
+myMinimumBy :: (a -> a -> Ordering) -> [a] -> a
+myMinimumBy f [] = undefined
+myMinimumBy f (a:b:[])
+  | compared == GT = b
+  | compared == LT = a
+  | otherwise      = a
+  where compared = f a b
+myMinimumBy f (a:b:as)
+  | compared == GT = myMinimumBy f (b:as)
+  | compared == LT = myMinimumBy f (a:as)
+  | otherwise      = myMinimumBy f (a:as)
+  where compared = f a b
+
+myMaximum :: (Ord a) => [a] -> a
+myMaximum = myMaximumBy compare
+
+myMinimum :: (Ord a) => [a] -> a
+myMinimum = myMinimumBy compare
