@@ -1,5 +1,4 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use first" #-}
+{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 module MyPrelude where
 
 import Prelude hiding (
@@ -16,6 +15,8 @@ import Prelude hiding (
   rem,
   odd,
   even,
+  div,
+  divMod,
   length,
   concat,
   concatMap,
@@ -98,6 +99,18 @@ odd a = (==) 1 $ rem a 2
 
 even :: Integral a => a -> Bool
 even a = (==) 0 $ rem a 2
+
+div :: Integral a => a -> a -> a
+div _ 0 = undefined
+div a b = go a b 0
+  where
+    go a' b' acc
+      | a' >= b' = go (a' - b') b' (acc + 1)
+      | otherwise = acc
+
+divMod :: Integral a => a -> a -> (a, a)
+divMod a b = (divided, a - (b * divided))
+  where divided = div a b
 
 length :: [a] -> Int
 length [] = 0
