@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use first" #-}
 module MyPrelude where
 
 import Prelude hiding (
@@ -43,6 +45,7 @@ import Prelude hiding (
 (++) (a:as) b = a : (as ++ b)
 
 (!!) :: [a] -> Int -> a
+(!!) [] _ = undefined
 (!!) (a:_) 0 = a
 (!!) (_:as) b = as !! (b - 1)
 
@@ -60,16 +63,20 @@ import Prelude hiding (
   | otherwise = a * (a ^ (b - 1))
 
 head :: [a] -> a
+head [] = undefined
 head (a:_) = a
 
 last :: [a] -> a
+last [] = undefined
 last [a] = a
 last (_:as) = last as
 
 tail :: [a] -> [a]
+tail [] = undefined
 tail (_:as) = as
 
 init :: [a] -> [a]
+init [] = undefined
 init [_] = []
 init (a:as) = a:init as
 
@@ -96,6 +103,7 @@ length :: [a] -> Int
 length [] = 0
 length a = go a 0
   where
+    go [] _ = 0
     go [_] len = len + 1
     go (_:as) len = go as (len + 1)
 
@@ -105,7 +113,7 @@ concat (a:as) = a ++ concat as
 
 concatMap :: (a -> [b]) -> [a] -> [b]
 concatMap _ [] = []
-concatMap f (a:as) = (f a) ++ (concatMap f as)
+concatMap f (a:as) = f a ++ concatMap f as
 
 reverse :: [a] -> [a]
 reverse = go []
@@ -127,14 +135,17 @@ filter f (a:as)
   | otherwise = filter f as
 
 take :: Int -> [a] -> [a]
+take _ [] = []
 take 0 _ = []
 take n (a:as) = a:take (n - 1) as
 
 drop :: Int -> [a] -> [a]
+drop _ [] = []
 drop 0 a = a
 drop n (_:as) = drop (n - 1) as
 
 splitAt :: Int -> [a] -> ([a], [a])
+splitAt _ [] = ([], [])
 splitAt 0 as = ([], as)
 splitAt n (a:as) = (a:fst nextSplit, snd nextSplit)
   where nextSplit = splitAt (n - 1) as
@@ -165,7 +176,8 @@ compare a b
 
 maximum :: Ord a => [a] -> a
 maximum [] = undefined
-maximum (a:b:[])
+maximum [a] = a
+maximum [a, b]
   | compared == GT = a
   | compared == LT = b
   | otherwise = a
@@ -178,7 +190,8 @@ maximum (a:b:as)
 
 minimum :: Ord a => [a] -> a
 minimum [] = undefined
-minimum (a:b:[])
+minimum [a] = a
+minimum [a, b]
   | compared == GT = b
   | compared == LT = a
   | otherwise = a
@@ -192,7 +205,7 @@ minimum (a:b:as)
 zip :: [a] -> [b] -> [(a, b)]
 zip [] _ = []
 zip _ [] = []
-zip (a:as) (b:bs) = (a, b):(zip as bs)
+zip (a:as) (b:bs) = (a, b):zip as bs
 
 zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
 zipWith _ [] _ = []
@@ -200,12 +213,12 @@ zipWith _ _ [] = []
 zipWith f (a:as) (b:bs) = f a b:zipWith f as bs
 
 foldr :: (a -> b -> b) -> b -> [a] -> b
-foldr f i [] = i
+foldr _ i [] = i
 foldr f i (a:as) = f a (foldr f i as)
 
 foldl :: (b -> a -> b) -> b -> [a] -> b
-foldl f i [] = i
-foldl f i (a:as) = f (foldl f i as) a 
+foldl _ i [] = i
+foldl f i (a:as) = f (foldl f i as) a
 
 sum :: Num a => [a] -> a
 sum = foldr (+) 0
@@ -214,11 +227,11 @@ sum' [] = 0
 sum' (a:as) = a + sum as
 
 scanr :: (a -> b -> b) -> b -> [a] -> [b]
-scanr f i [] = [i]
-scanr f i (a:as) = (f a (head $ nextRes)):nextRes
+scanr _ i [] = [i]
+scanr f i (a:as) = f a (head nextRes):nextRes
   where nextRes = scanr f i as
 
 scanl :: (b -> a -> b) -> b -> [a] -> [b]
-scanl f i [] = [i]
-scanl f i (a:as) = (f (head $ nextRes) a):nextRes
+scanl _ i [] = [i]
+scanl f i (a:as) = f (head nextRes) a:nextRes
   where nextRes = scanl f i as
