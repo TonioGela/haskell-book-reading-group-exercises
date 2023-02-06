@@ -18,8 +18,21 @@ f Friday = "Miller Time"
 -- The function g is recursive and may not terminate
 g xs = xs !! (length xs - 1)
 
-
 caesarCipher :: Int -> String -> String
-caesarCipher' i = map (chr.(+97).(flip mod 26).(subtract 97).(+i).ord)
+caesarCipher i = map (chr.(+97).(flip mod 26).(subtract 97).(+i).ord)
 
-vigenereCipher :: String -> String -> String
+-- vigenereCipher :: String -> String -> String
+-- vigenereCipher (a:as) (b:bs) = 
+
+isSubseqOf :: (Eq a) => [a] -> [a] -> Bool
+isSubseqOf [] _ = True
+isSubseqOf _ [] = False
+isSubseqOf ass@(a:as) (b:bs)
+  | a == b    = isSubseqOf as bs
+  | otherwise = isSubseqOf ass bs
+
+capitalizeWord :: String -> String
+capitalizeWord (a:as) = toUpper a:as
+
+capitalizeWords :: String -> [(String, String)]
+capitalizeWords = map (\x -> (x, capitalizeWord x)) . words
