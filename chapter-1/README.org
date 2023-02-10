@@ -1,0 +1,19 @@
+* Chapter Exercises
+** Combinators
+
+1. $\lambda x . xxx$ is a combinator
+2. $\lambda xy . zx$ is not a combinator, z is free 
+3  Is a combinator
+4. Is a cominator
+5. Isn't a combinator
+
+** Normal form or diverge?
+
+1. Converge (it's already its own limit point/normal form)
+2. Diverge
+3. Converge to $zzz$
+
+** Beta reduce
+
+1. $\... \to z$
+4. $\... \to yy$
