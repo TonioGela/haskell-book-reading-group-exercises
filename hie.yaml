@@ -2,3 +2,5 @@ cradle:
   stack:
     - path: "./chapter06/Chapter06.hs"
       component: "tonioGela:lib"
+    - path: "./chapter12/Chapter12.hs"
+      component: "tonioGela:lib"

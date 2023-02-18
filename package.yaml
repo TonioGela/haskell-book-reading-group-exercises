@@ -14,7 +14,9 @@ ghc-options:
   - -Wmissing-home-modules
   - -Wpartial-fields
   - -Wredundant-constraints
+  - -Wno-unused-top-binds
 
 library:
   source-dirs:
     - chapter06
+    - chapter12
