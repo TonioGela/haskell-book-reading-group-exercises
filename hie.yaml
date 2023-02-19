@@ -1,0 +1,4 @@
+cradle:
+  stack:
+    - path: "./chapter12/Chapter12.hs"
+      component: "Emraors:lib"
