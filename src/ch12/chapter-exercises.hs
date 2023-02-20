@@ -148,9 +148,7 @@ either' :: (a -> c) -> (b -> c) -> Either a b -> c
 either' aToC _ (Left a) = aToC a
 either' _ bToC (Right b) = bToC b
 
--- TODO
--- eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
--- eitherMaybe'' bToC (Left a) = Nothing
--- eitherMaybe'' bToC (Right b) = Just (bToC b)
+eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
+eitherMaybe'' bToC = either' (\x -> Nothing) (\x -> Just (bToC x))
 
 -- TODO Unfolds
