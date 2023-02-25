@@ -1,9 +1,8 @@
 module Chapter12 () where
 
-
-import Data.Char
+import Data.Char ( toLower )
 import Data.List ((\\))
-
+import Data.Bifunctor
 
 -----------------------
 ---String Processing---
@@ -126,24 +125,19 @@ flipMaybe = foldr maybeCons (Just [])
 ------------------------------
 
 ---Exercise 1---
-eitherLeftCons :: Either a b -> [a] -> [a]
-eitherLeftCons (Left a) xs = a : xs
-eitherLeftCons _ xs = xs
-
 lefts' :: [Either a b] -> [a]
-lefts' = foldr eitherLeftCons []
+lefts' = fst . partitionEithers'
 
 ---Exercise 2---
-eitherRightCons :: Either a b -> [b] -> [b]
-eitherRightCons (Right b) xs = b : xs
-eitherRightCons _ xs = xs
-
 rights' :: [Either a b] -> [b]
-rights' = foldr eitherRightCons []
+rights' = snd . partitionEithers'
 
 ---Exercise 3---
 partitionEithers' :: [Either a b] -> ([a], [b])
-partitionEithers' xs = (lefts' xs, rights' xs)
+partitionEithers' = foldr (flip f) ([],[])
+  where f xs = either' (\a -> first (a: ) xs)
+                       (\b -> second (b: ) xs)
+
 
 ---Exercise 4---
 eitherMaybe' :: (b -> c) -> Either a b -> Maybe c
@@ -183,7 +177,7 @@ betterIterate f = myUnfoldr (\a -> Just (f a, a))
 
 
 data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
-  deriving (Eq, Ord, Show)
+        deriving (Eq, Ord, Show)
 
 ---Exercise 1---
 unfold :: (a -> Maybe (a,b,a)) -> a -> BinaryTree b
@@ -195,3 +189,4 @@ unfold f a = case f a of
 treeBuild :: Integer -> BinaryTree Integer
 treeBuild n = unfold (\m -> if m >= n
                        then Nothing else Just (m + 1, m , m + 1)) 0
+
