@@ -3,6 +3,12 @@ version: 0.1.0.0
 
 dependencies:
   - base >= 4.7 && < 5
+  - hspec
+  - QuickCheck
+  - random >= 1.2.1.1
+  - split 
+
+data-dir: data
 
 ghc-options:
   - -Wall
@@ -19,3 +25,4 @@ ghc-options:
 library:
   source-dirs:
     - chapter12
+    - chapter13
