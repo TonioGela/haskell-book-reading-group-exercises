@@ -216,9 +216,8 @@ main' = gameWords >>= randomWord >>= (runGame . freshPuzzle . map toLower)
 ---Exercises 2 and 3---
 palindrome :: IO ()
 palindrome = forever $ do
-  line1 <- getLine
-  let string = filter isLetter . map toLower $ line1
-  if string == reverse string
+  line <- filter isLetter . map toLower <$> getLine
+  if line == reverse line
    then putStrLn "It's a palindrome!"
    else putStrLn "Nope!" >> exitSuccess
 
