@@ -2,7 +2,7 @@ module Chapter13 () where
 
 import Control.Monad (forever, when)
 import Data.Char (toLower, isLetter)
-import Data.List (intersperse, (\\))
+import Data.List (intersperse)
 import Data.Maybe (isJust)
 import System.Exit (exitSuccess)
 import System.Random (randomRIO)
@@ -10,7 +10,6 @@ import System.Random (randomRIO)
 --------------------
 ---Chapter's code---
 --------------------
-
 type WordList = [String]
 
 minWordLength :: Int
@@ -33,7 +32,6 @@ gameWords = do
   where gameLength w = let l = length (w :: String)
                        in l > minWordLength
                           && l < maxWordLength
-
 
 randomWord ::  WordList -> IO String
 randomWord wl = do
@@ -120,7 +118,6 @@ runGame puzzle =
 main :: IO ()
 main = gameWords >>= randomWord >>= (runGame . freshPuzzle . map toLower)
 
-
 ------------------------
 ---Hangman game logic---
 ------------------------
@@ -203,7 +200,6 @@ handleResult (Left AgeTooLow) = putStrLn "Age too low"
 handleResult (Left (PersonInvalidUnknown st)) = putStrLn $ "Unknown error" ++ st
 handleResult (Right person) = putStrLn $ "Yay! " ++ show person
 
----Domanda, come controllare che l'eta' inserita sia un Integer?
 gimmePerson :: IO ()
 gimmePerson = do
         putStrLn "Enter a name:"
