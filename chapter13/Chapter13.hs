@@ -39,15 +39,8 @@ randomWord wl = do
   randomIndex <- randomRIO (0, l)
   return $ wl !! randomIndex
 
-{-
-randomWord :: WordList -> IO String
-randomWord wl = (wl !! )
-                <$> (gameWords
-                     >>= (\n -> randomRIO (0, n)) . length)
--}
 randomWord' :: IO String
 randomWord' = gameWords >>= randomWord
-
 
 data Puzzle = Puzzle String [Maybe Char] [Char]
 
