@@ -153,7 +153,7 @@ runGame' puzzle counter = do
                     \ be a single character"
 
 main' :: IO ()
-main' = gameWords >>= randomWord >>= (flip runGame' 0 . freshPuzzle . map toLower)
+main' = gameWords >>= randomWord >>= (flip runGame' maxNumberErrors . freshPuzzle . map toLower)
 
 --------------------
 ---Modifying code---
