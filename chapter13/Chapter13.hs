@@ -97,6 +97,13 @@ gameWin :: Puzzle -> IO ()
 gameWin (Puzzle _ filledInSoFar _) =
   when (all isJust filledInSoFar) $ putStrLn "You win!" >> exitSuccess
 
+gameOver :: Puzzle -> IO ()
+gameOver (Puzzle wordToGuess _ guessed) =
+  when (length guessed > maxNumberErrors)
+  $ putStrLn  "You lose!"
+    >> putStrLn ("The word was: " ++ wordToGuess)
+    >> exitSuccess
+
 runGame :: Puzzle -> IO ()
 runGame puzzle =
   forever $ do
@@ -117,19 +124,6 @@ main = gameWords >>= randomWord >>= (runGame . freshPuzzle . map toLower)
 ------------------------
 ---Hangman game logic---
 ------------------------
-
-gameOver :: Puzzle -> IO ()
-gameOver puzzle@(Puzzle wordToGuess _ _) =
-  when (wrongAttempts puzzle > maxNumberErrors)
-  $ putStrLn  "You lose!"
-    >> putStrLn ("The word was: " ++ wordToGuess)
-    >> exitSuccess
-
-wrongAttempts :: Puzzle -> Int
-wrongAttempts (Puzzle wordToGuess _ guessed) =
-  length $ guessed \\ wordToGuess
-
----second version---
 
 gameOver' :: Puzzle -> Int  -> IO ()
 gameOver' (Puzzle wordToGuess _ _) counter =
