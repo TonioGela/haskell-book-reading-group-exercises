@@ -21,8 +21,17 @@ g xs = xs !! (length xs - 1)
 caesarCipher :: Int -> String -> String
 caesarCipher i = map (chr.(+97).(flip mod 26).(subtract 97).(+i).ord)
 
+-- TODO
 -- vigenereCipher :: String -> String -> String
 -- vigenereCipher (a:as) (b:bs) = 
+
+cipher :: String -> String -> String
+cipher = zipWith (\l a -> caesarCipher (ord l - ord 'A') a) (repeat key)
+cipher ks = snd . mapAccumL f (repeat ks) 
+    where 
+        f ks ' ' = (ks, ' ')
+        f (k:ks) c = (ks, caesarCipher (ord k - ord 'A) c)
+
 
 isSubseqOf :: (Eq a) => [a] -> [a] -> Bool
 isSubseqOf [] _ = True
@@ -36,3 +45,5 @@ capitalizeWord (a:as) = toUpper a:as
 
 capitalizeWords :: String -> [(String, String)]
 capitalizeWords = map (\x -> (x, capitalizeWord x)) . words
+
+-- TODO ...
