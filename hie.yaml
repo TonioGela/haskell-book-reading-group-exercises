@@ -1,7 +1,11 @@
 cradle:
-  stack:
-    - path: "./chapter12/Chapter12.hs"
-      component: "Emraors:lib"
+  cabal:
+    - path: "chapter12/Chapter12.hs"
+      component: "lib:Emraors"
 
-    - path: "./chapter13/Chapter13.hs"
-      component: "Emraors:lib"
+    - path: "chapter13/Chapter13.hs"
+      component: "lib:Emraors"
+
+    - path: "chapter14/Chapter14.hs"
+      component: "lib:Emraors"
+
