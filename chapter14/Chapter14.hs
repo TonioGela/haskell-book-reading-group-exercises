@@ -15,7 +15,6 @@ dividedBy num denom = go num denom 0
           | n < d = (count, n)
           | otherwise = go (n - d) d (count + 1)
 
-
 divideCheck :: IO ()
 divideCheck = hspec $ do
   describe "Division" $ do
@@ -28,9 +27,6 @@ divideCheck = hspec $ do
     it "22 divided by 5 is 4 remainder 2" $ do
       dividedBy 22 5 `shouldBe` (4, 2)
 
-
----TODO write this function and write tests for it
----multiply two numbers by recursively sum them
 multiply :: Integral a => a -> a -> a
 multiply x y
   | x > 0     = y + multiply (x - 1) y
@@ -44,10 +40,10 @@ multiplyCheck = hspec $ do
       property $ \x -> multiply 0 x == (0 ::Int )
     it "x multiplied by 1 is x" $
        property $ \x -> multiply 1 x == (x ::Int )
- --   it "multiplication is commutative" $
 
-
----Some generators
+---------------------
+---Some generators---
+---------------------
 
 genBool :: Gen Bool
 genBool = choose (True, False)
@@ -60,7 +56,6 @@ genOrdering = elements [LT, EQ, GT]
 
 genChar :: Gen Char
 genChar = elements ['a'..'z']
-
 
 genTuple :: (Arbitrary a, Arbitrary b) => Gen (a, b)
 genTuple = do
@@ -80,7 +75,7 @@ genEither = do
   a <- arbitrary
   b <- arbitrary
   elements [Left a, Right b]
--- equal probability
+
 genMaybe :: Arbitrary a => Gen (Maybe a)
 genMaybe = do
   a <- arbitrary
@@ -92,7 +87,7 @@ genMaybe' = do
   frequency [ (1, return Nothing)
             , (3, return (Just a))]
 
----Using QuickCheck without Hspec
+
 prop_additionGreater :: Int -> Bool
 prop_additionGreater x = x + 1 > x
 
@@ -103,7 +98,9 @@ runQc = quickCheck prop_additionGreater
 ---Exercises---
 ---------------
 
----Validating numbers into words
+-----------------------------------
+---Validating numbers into words---
+-----------------------------------
 
 ---Qui dovrei usare una map ma son pigro...
 digitToWord :: Int -> String
@@ -122,7 +119,6 @@ digitToWord n = case n of
 ---Qui sarebbe meglio usare mod e div ma sono pigro...
 digits :: Int -> [Int]
 digits = map (read . return) . show
-
 
 wordNumber :: Int -> String
 wordNumber = concat . (intersperse "-" ) . map digitToWord . digits
