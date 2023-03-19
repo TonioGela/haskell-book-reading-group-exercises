@@ -1,4 +1,4 @@
-module Chapter13 () where
+module Chapter13 (fillInCharacter, handleGuess, Puzzle (..)) where
 
 import Control.Monad (forever, when)
 import Data.Char (toLower, isLetter)
@@ -43,6 +43,8 @@ randomWord' :: IO String
 randomWord' = gameWords >>= randomWord
 
 data Puzzle = Puzzle String [Maybe Char] [Char]
+    deriving Eq
+
 
 renderPuzzleChar :: Maybe Char -> Char
 renderPuzzleChar = maybe '_' id

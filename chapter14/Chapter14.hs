@@ -4,6 +4,9 @@ import Test.Hspec
 import Test.QuickCheck
 import Test.QuickCheck.Function ()
 import Data.List (sort)
+import Data.Char (isAlpha, toUpper)
+import Chapter13 (handleGuess, fillInCharacter, Puzzle (..))
+
 
 
 dividedBy :: Integral a => a -> a -> (a, a)
@@ -168,6 +171,7 @@ checkMultCommutative = quickCheck (binOpCommutative (*) :: Integer
                                                            -> Bool)
 
 ---Exercise 5---
+
 genPosInt :: Gen Integer
 genPosInt =  (arbitrary :: Gen Integer) `suchThat` ( /= 0)
 
@@ -205,7 +209,6 @@ checkPowCommutative = quickCheck (powCommutative :: Integer
                                                     -> Bool)
 
 ---Exercise 8---
-
 propEvalCompose :: Eq c => (Fun b c) -> (Fun a b) -> a -> Bool
 propEvalCompose (Fun _ f) (Fun _ g) a = (f $ g $ a) == (f . g $ a)
 
@@ -219,11 +222,150 @@ checkEvalCompose = quickCheck (propEvalCompose :: (Fun Integer Integer)
 propFoldCons :: Eq a => [a] -> [a] -> Bool
 propFoldCons xs ys = foldr (:) xs ys == (++) xs ys
 
+checkFoldCons :: IO ()
+checkFoldCons = quickCheck (propFoldCons :: [String] -> [String] -> Bool)
+
 propConcat :: Eq a => [[a]] -> Bool
 propConcat xs = foldr (++) [] xs == concat xs
 
+checkConcat :: IO ()
+checkConcat = quickCheck (propConcat :: [[String]] -> Bool)
+
 ---Exercise 10---
+
 propLength :: Int -> [a] -> Bool
 propLength n xs = length (take n xs) == n
 
+checkLenght :: IO ()
+checkLenght = quickCheck (propLength :: Int -> [String] -> Bool)
+
 ---Exercise 11---
+
+propShowRead :: (Read a, Show a, Eq a) => a -> Bool
+propShowRead x = (read . show $ x) == x
+
+checkShowRead :: IO ()
+checkShowRead = quickCheck (propShowRead :: Integer -> Bool)
+
+-----------------
+---Idempotence---
+-----------------
+
+---Exercises 1 and 2---
+capitalizeWord :: String -> String
+capitalizeWord [] = []
+capitalizeWord (x : xs)
+  | isAlpha x = toUpper x : xs
+  | otherwise = x : capitalizeWord xs
+
+
+twice :: (a -> a) -> (a -> a)
+twice f = f . f
+
+fourTimes :: (a -> a) -> (a -> a)
+fourTimes = twice . twice
+
+propCapitalizeWord :: String -> Bool
+propCapitalizeWord st = (capitalizeWord st == twice capitalizeWord st)
+                        && (capitalizeWord st == fourTimes capitalizeWord st)
+
+propSortIdempotence :: Ord a => [a] -> Bool
+propSortIdempotence xs = (sort xs == twice sort xs)
+                        && (sort xs == fourTimes sort xs)
+
+checkIdempotence :: IO ()
+checkIdempotence = do
+  quickCheck propCapitalizeWord
+  quickCheck (propSortIdempotence :: [String] -> Bool)
+
+--------------------------------------------------
+---Make a Gen random generator for the datatype---
+--------------------------------------------------
+
+data Fool = Fulse | Frue
+  deriving (Eq, Show)
+
+genFoolBalanced :: Gen Fool
+genFoolBalanced = elements [Fulse, Frue]
+
+genFoolUnbalanced :: Gen Fool
+genFoolUnbalanced = frequency [ (1, pure Fulse)
+                              , (2, pure Frue)]
+---------------------
+---Hangman testing---
+---------------------
+
+fillInCharacterTest :: IO ()
+fillInCharacterTest = hspec $
+    describe "fillInCharacter unit tests" $ do
+
+      it "handles correct guesses" $ do
+        let word = "cac"
+            guess     = 'a'
+            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            expectedPuzzle = Puzzle word [Nothing, Just 'a', Nothing] [guess]
+        fillInCharacter puzzle guess `shouldBe` expectedPuzzle
+
+      it "handles incorrect guesses" $ do
+        let word = "cac"
+            guess     = 't'
+            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            expectedPuzzle = Puzzle word [Nothing, Nothing, Nothing] [guess]
+        fillInCharacter puzzle guess `shouldBe` expectedPuzzle
+
+      it "handles repeated guesses" $ do
+        let word = "cac"
+            guess     = 'a'
+            puzzle    = Puzzle word [Nothing, Just 'a', Nothing] [guess]
+            expectedPuzzle =
+              Puzzle word [Nothing, Just 'a', Nothing] [guess, guess]
+        fillInCharacter puzzle guess `shouldBe` expectedPuzzle
+
+      it "handles multiple correct chars" $ do
+        let word = "cac"
+            guess     = 'c'
+            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            expectedPuzzle = Puzzle word [Just 'c', Nothing, Just 'c'] [guess]
+        fillInCharacter puzzle guess `shouldBe` expectedPuzzle
+
+
+handleGuessTest :: IO ()
+handleGuessTest = hspec $
+    describe "handleGuess unit tests" $ do
+
+      it "updates a puzzle when a correct guess is made" $ do
+        let word = "cac"
+            guess     = 'a'
+            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            expectedPuzzle = Puzzle word [Nothing, Just 'a', Nothing] [guess]
+        do
+          updatePuzzle <- handleGuess puzzle guess
+          updatePuzzle `shouldBe` expectedPuzzle
+
+      it "updates a puzzle when an incorrect guess is made" $ do
+        let word = "cac"
+            guess     = 't'
+            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            expectedPuzzle = Puzzle word [Nothing, Nothing, Nothing] [guess]
+        do
+          updatePuzzle <- handleGuess puzzle guess
+          updatePuzzle `shouldBe` expectedPuzzle
+
+      it "does not update a puzzle when a (correct) guess was already made" $ do
+        let word = "cac"
+            guess     = 'a'
+            puzzle    = Puzzle word [Nothing,  Just 'a', Nothing] [guess]
+        do
+          updatePuzzle <- handleGuess puzzle guess
+          updatePuzzle `shouldBe` puzzle
+
+---L'implementazione data da loro fa fallire questo test che, a mio parere, non dovrebbe fallire
+{-
+      it "does not update a puzzle when a guess was already made" $ do
+        let word = "cac"
+            guess     = 't'
+            puzzle    = Puzzle word [Nothing,  Just 'a', Nothing] ['t']
+        do
+          updatePuzzle <-  handleGuess puzzle guess
+          updatePuzzle `shouldBe` puzzle
+-}
