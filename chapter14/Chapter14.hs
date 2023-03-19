@@ -3,7 +3,7 @@ module Chapter14 () where
 import Test.Hspec
 import Test.QuickCheck
 import Test.QuickCheck.Function ()
-import Data.List (sort)
+import Data.List (sort, intersperse)
 import Data.Char (isAlpha, toUpper)
 import Chapter13 (handleGuess, fillInCharacter, Puzzle (..))
 
@@ -105,14 +105,48 @@ runQc = quickCheck prop_additionGreater
 
 ---Validating numbers into words
 
+---Qui dovrei usare una map ma son pigro...
 digitToWord :: Int -> String
-digitToWord n = undefined
+digitToWord n = case n of
+   0 -> "zero"
+   1 -> "one"
+   2 -> "two"
+   3 -> "three"
+   4 -> "four"
+   5 -> "five"
+   6 -> "six"
+   7 -> "seven"
+   8 -> "eight"
+   9 -> "nine"
 
+---Qui sarebbe meglio usare mod e div ma sono pigro...
 digits :: Int -> [Int]
-digits n = undefined
+digits = map (read . return) . show
+
 
 wordNumber :: Int -> String
-wordNumber n = undefined
+wordNumber = concat . (intersperse "-" ) . map digitToWord . digits
+
+wordNumberTest :: IO ()
+wordNumberTest = hspec $ do
+
+  describe "digitToWord does what we want" $ do
+    it "returns zero for 0" $ do
+      digitToWord 0 `shouldBe` "zero"
+    it "returns one for 1" $ do
+      digitToWord 1 `shouldBe` "one"
+
+  describe "digits does what we want" $ do
+    it "returns [1] for 1" $ do
+      digits 1 `shouldBe` [1]
+    it "returns [1, 0, 0] for 100" $ do
+      digits 100 `shouldBe` [1,0,0]
+
+  describe "wordNumber does what we want" $ do
+    it "returns one-zero-zero for 100" $ do
+      wordNumber 100 `shouldBe` "one-zero-zero"
+    it "returns nine-zero-zero-one for 9001" $ do
+      wordNumber 9001 `shouldBe` "nine-zero-zero-one"
 
 ----------------------
 ---Using QuickCheck---
@@ -133,13 +167,13 @@ listOrdered xs = snd $ foldr go (Nothing, True) xs
         go y (Just x, t) = (Just y, x >= y)
 
 
-prop_sort :: Ord a => [a] -> Bool
-prop_sort = listOrdered . sort
+propSort :: Ord a => [a] -> Bool
+propSort = listOrdered . sort
 
 checkSort :: IO ()
 checkSort = do
-  quickCheck (prop_sort :: [Integer] -> Bool)
-  quickCheck (prop_sort :: [String] -> Bool)
+  quickCheck (propSort :: [Integer] -> Bool)
+  quickCheck (propSort :: [String] -> Bool)
 
 ---Exercises 3 and 4---
 binOpAssociative :: Eq a => (a -> a -> a) -> a -> a -> a -> Bool
@@ -171,7 +205,6 @@ checkMultCommutative = quickCheck (binOpCommutative (*) :: Integer
                                                            -> Bool)
 
 ---Exercise 5---
-
 genPosInt :: Gen Integer
 genPosInt =  (arbitrary :: Gen Integer) `suchThat` ( /= 0)
 
@@ -188,7 +221,6 @@ checkDivMod :: IO ()
 checkDivMod = quickCheck $ forAll genPosInt (forAll genPosInt . prop_divMod)
 
 ---Exercise 6---
-
 powAssociative :: (Num a, Eq a, Integral b, Integral c) => a -> b -> c -> Bool
 powAssociative x y z = x ^ (y ^ z) == (x ^ y) ^ z
 
@@ -232,7 +264,6 @@ checkConcat :: IO ()
 checkConcat = quickCheck (propConcat :: [[String]] -> Bool)
 
 ---Exercise 10---
-
 propLength :: Int -> [a] -> Bool
 propLength n xs = length (take n xs) == n
 
@@ -240,7 +271,6 @@ checkLenght :: IO ()
 checkLenght = quickCheck (propLength :: Int -> [String] -> Bool)
 
 ---Exercise 11---
-
 propShowRead :: (Read a, Show a, Eq a) => a -> Bool
 propShowRead x = (read . show $ x) == x
 
@@ -301,30 +331,30 @@ fillInCharacterTest = hspec $
 
       it "handles correct guesses" $ do
         let word = "cac"
-            guess     = 'a'
-            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            guess = 'a'
+            puzzle = Puzzle word [Nothing,  Nothing, Nothing] ""
             expectedPuzzle = Puzzle word [Nothing, Just 'a', Nothing] [guess]
         fillInCharacter puzzle guess `shouldBe` expectedPuzzle
 
       it "handles incorrect guesses" $ do
         let word = "cac"
-            guess     = 't'
-            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            guess = 't'
+            puzzle = Puzzle word [Nothing,  Nothing, Nothing] ""
             expectedPuzzle = Puzzle word [Nothing, Nothing, Nothing] [guess]
         fillInCharacter puzzle guess `shouldBe` expectedPuzzle
 
       it "handles repeated guesses" $ do
         let word = "cac"
-            guess     = 'a'
-            puzzle    = Puzzle word [Nothing, Just 'a', Nothing] [guess]
+            guess = 'a'
+            puzzle = Puzzle word [Nothing, Just 'a', Nothing] [guess]
             expectedPuzzle =
               Puzzle word [Nothing, Just 'a', Nothing] [guess, guess]
         fillInCharacter puzzle guess `shouldBe` expectedPuzzle
 
       it "handles multiple correct chars" $ do
         let word = "cac"
-            guess     = 'c'
-            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            guess = 'c'
+            puzzle = Puzzle word [Nothing,  Nothing, Nothing] ""
             expectedPuzzle = Puzzle word [Just 'c', Nothing, Just 'c'] [guess]
         fillInCharacter puzzle guess `shouldBe` expectedPuzzle
 
@@ -335,8 +365,8 @@ handleGuessTest = hspec $
 
       it "updates a puzzle when a correct guess is made" $ do
         let word = "cac"
-            guess     = 'a'
-            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            guess = 'a'
+            puzzle = Puzzle word [Nothing,  Nothing, Nothing] ""
             expectedPuzzle = Puzzle word [Nothing, Just 'a', Nothing] [guess]
         do
           updatePuzzle <- handleGuess puzzle guess
@@ -344,8 +374,8 @@ handleGuessTest = hspec $
 
       it "updates a puzzle when an incorrect guess is made" $ do
         let word = "cac"
-            guess     = 't'
-            puzzle    = Puzzle word [Nothing,  Nothing, Nothing] ""
+            guess = 't'
+            puzzle = Puzzle word [Nothing,  Nothing, Nothing] ""
             expectedPuzzle = Puzzle word [Nothing, Nothing, Nothing] [guess]
         do
           updatePuzzle <- handleGuess puzzle guess
@@ -353,8 +383,8 @@ handleGuessTest = hspec $
 
       it "does not update a puzzle when a (correct) guess was already made" $ do
         let word = "cac"
-            guess     = 'a'
-            puzzle    = Puzzle word [Nothing,  Just 'a', Nothing] [guess]
+            guess = 'a'
+            puzzle = Puzzle word [Nothing,  Just 'a', Nothing] [guess]
         do
           updatePuzzle <- handleGuess puzzle guess
           updatePuzzle `shouldBe` puzzle
@@ -363,8 +393,8 @@ handleGuessTest = hspec $
 {-
       it "does not update a puzzle when a guess was already made" $ do
         let word = "cac"
-            guess     = 't'
-            puzzle    = Puzzle word [Nothing,  Just 'a', Nothing] ['t']
+            guess = 't'
+            puzzle = Puzzle word [Nothing,  Just 'a', Nothing] ['t']
         do
           updatePuzzle <-  handleGuess puzzle guess
           updatePuzzle `shouldBe` puzzle
