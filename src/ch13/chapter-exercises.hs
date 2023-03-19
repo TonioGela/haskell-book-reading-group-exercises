@@ -24,7 +24,6 @@ stringToLower = fmap toLower
 
 -- then "Madam I’m Adam," is palindrome
 
-
 type Name = String
 type Age = Integer
 data Person = Person Name Age deriving Show
