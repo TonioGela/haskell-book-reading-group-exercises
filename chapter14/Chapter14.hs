@@ -196,6 +196,12 @@ checkSortWithLenght n = quickCheck $ mapSize (max n)
                                    $ forAll (listOf1 arbitrary :: Gen [Int])
                                    $ listOrdered'' . sort
 
+listOrdered''' :: (Ord a) => [a] -> Bool
+listOrdered''' xs = and $ zipWith (<=) (sort xs) (tail . sort $ xs)
+
+checkSort' :: IO ()
+checkSort' = quickCheck (listOrdered''' :: [Int] -> Bool)
+
 ---Exercises 3 and 4---
 binOpAssociative :: Eq a => (a -> a -> a) -> a -> a -> a -> Bool
 binOpAssociative op x y z = x `op` (y `op` z) == (x `op` y) `op` z
