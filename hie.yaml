@@ -9,3 +9,5 @@ cradle:
     - path: "chapter14/Chapter14.hs"
       component: "lib:Emraors"
 
+    - path: "chapter15/Chapter15.hs"
+      component: "lib:Emraors"

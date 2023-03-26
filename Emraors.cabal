@@ -14,12 +14,14 @@ library
       Chapter12
       Chapter13
       Chapter14
+      Chapter15
   other-modules:
       Paths_Emraors
   hs-source-dirs:
       chapter12
       chapter13
       chapter14
+      chapter15
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-unused-top-binds
   build-depends:
       QuickCheck
