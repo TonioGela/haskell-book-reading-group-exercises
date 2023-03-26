@@ -123,37 +123,40 @@ digits = map (read . return) . show
 wordNumber :: Int -> String
 wordNumber = concat . (intersperse "-" ) . map digitToWord . digits
 
+
+---describe lo possiamo togliere
 wordNumberTest :: IO ()
 wordNumberTest = hspec $ do
-
-  describe "digitToWord does what we want" $ do
-    it "returns zero for 0" $ do
+  it "returns zero for 0" $
       digitToWord 0 `shouldBe` "zero"
-    it "returns one for 1" $ do
+  it "returns one for 1" $
       digitToWord 1 `shouldBe` "one"
 
   describe "digits does what we want" $ do
-    it "returns [1] for 1" $ do
+    it "returns [1] for 1" $
       digits 1 `shouldBe` [1]
-    it "returns [1, 0, 0] for 100" $ do
+    it "returns [1, 0, 0] for 100" $
       digits 100 `shouldBe` [1,0,0]
 
   describe "wordNumber does what we want" $ do
-    it "returns one-zero-zero for 100" $ do
+    it "returns one-zero-zero for 100" $
       wordNumber 100 `shouldBe` "one-zero-zero"
-    it "returns nine-zero-zero-one for 9001" $ do
+    it "returns nine-zero-zero-one for 9001" $
       wordNumber 9001 `shouldBe` "nine-zero-zero-one"
-
 ----------------------
 ---Using QuickCheck---
 ----------------------
 
 ---Exercise 1---
-prop_doubleHalf :: (Eq a, Fractional a) => a -> Bool
-prop_doubleHalf x =  (x / 2) * 2 == x
+half :: (Eq a, Fractional a) => a -> a
+half x = x / 2
 
+propDoubleHalf :: (Show a, Eq a, Fractional a) => a -> Property
+propDoubleHalf x = half x * 2 === x
+
+---type application per passare il tipo come parametro -> estensione di Haskell
 checkDoubleHalf :: IO ()
-checkDoubleHalf = quickCheck (prop_doubleHalf :: Float -> Bool)
+checkDoubleHalf = quickCheck (propDoubleHalf :: Float -> Property)
 
 ---Exercise 2---
 listOrdered :: (Ord a) => [a] -> Bool
@@ -162,14 +165,36 @@ listOrdered xs = snd $ foldr go (Nothing, True) xs
         go y (Nothing, t) = (Just y, t)
         go y (Just x, t) = (Just y, x >= y)
 
+prop_monotoneBangBang :: Ord a => [a] -> Int -> Int -> Bool
+prop_monotoneBangBang xs n1 n2 = case compare n1 n2 of
+  LT -> x1 <= x2
+  GT -> x1 >= x2
+  EQ -> x1 == x2
+  where x1 = xs !! n1
+        x2 = xs !! n2
 
-propSort :: Ord a => [a] -> Bool
-propSort = listOrdered . sort
+listOrdered' :: Property
+listOrdered' = property $ do
+    xs <- fmap sort (listOf1 arbitrary :: Gen [Int])
+    let n = length xs
+    NonNegative n1 <- arbitrary `suchThat` (< NonNegative n)
+    NonNegative n2 <- arbitrary `suchThat` (< NonNegative n)
+    pure $ counterexample (show xs) $ prop_monotoneBangBang xs n1 n2
 
 checkSort :: IO ()
-checkSort = do
-  quickCheck (propSort :: [Integer] -> Bool)
-  quickCheck (propSort :: [String] -> Bool)
+checkSort = quickCheck $ withMaxSuccess 500 listOrdered'
+
+listOrdered'' :: (Ord a) => [a] -> Property
+listOrdered'' xs = let n = length xs in
+  property $ do
+      NonNegative n1 <- arbitrary `suchThat` (< NonNegative n)
+      NonNegative n2 <- arbitrary `suchThat` (< NonNegative n)
+      pure $ prop_monotoneBangBang xs n1 n
+
+checkSortWithLenght :: Int -> IO ()
+checkSortWithLenght n = quickCheck $ mapSize (max n)
+                                   $ forAll (listOf1 arbitrary :: Gen [Int])
+                                   $ listOrdered'' . sort
 
 ---Exercises 3 and 4---
 binOpAssociative :: Eq a => (a -> a -> a) -> a -> a -> a -> Bool
@@ -395,3 +420,4 @@ handleGuessTest = hspec $
           updatePuzzle <-  handleGuess puzzle guess
           updatePuzzle `shouldBe` puzzle
 -}
+
