@@ -1,4 +1,4 @@
-module A where
+module Ch15.MaybeAnotherMonoid where
 
 import Data.Monoid
 import Test.QuickCheck
@@ -60,6 +60,13 @@ instance Semigroup (First' a) where
 
 type FirstMappend = First' String -> First' String -> First' String -> Bool
 type FstId = First' String -> Bool
+
+instance Arbitrary (First' a) where
+  arbitrary =
+    frequency [
+      (1, return (First' {getFirst' = Nada}))
+      (1, return (First' {getFirst' = Only a}))
+    ]
 
 main2 :: IO ()
 main2 = do

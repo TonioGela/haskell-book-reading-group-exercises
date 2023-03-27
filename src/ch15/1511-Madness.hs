@@ -1,4 +1,4 @@
-module Madness where
+module Ch15.Madness where
 
 import Data.Monoid
 
