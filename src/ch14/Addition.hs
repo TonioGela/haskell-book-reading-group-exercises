@@ -71,3 +71,9 @@ genMaybe :: (Arbitrary a) => Gen (Maybe a)
 genMaybe = do
   a <- arbitrary
   elements [Nothing, Just a]
+
+prop_additionGreater :: Int -> Bool
+prop_additionGreater x = x + 1 > x
+
+runQc :: IO ()
+runQc = quickCheck prop_additionGreater
