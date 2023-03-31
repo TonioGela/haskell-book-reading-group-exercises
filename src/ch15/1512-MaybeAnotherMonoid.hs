@@ -49,6 +49,14 @@ main1 = do
 data Optional a = Only a | Nada deriving (Eq, Show)
 newtype First' a = First' { getFirst' :: Optional a } deriving (Eq, Show)
 
+instance (Arbitrary a) => Arbitrary (First' a) where
+  arbitrary = do
+    b <- arbitrary
+    frequency [
+        (1, return (First' {getFirst' = Nada}))
+        (1, return (First' {getFirst' = Only b}))
+      ]
+
 instance Monoid (First' a) where
   mempty = First' {getFirst' = Nada}
   mappend (First' {getFirst' = Nada}) b = b
@@ -60,13 +68,6 @@ instance Semigroup (First' a) where
 
 type FirstMappend = First' String -> First' String -> First' String -> Bool
 type FstId = First' String -> Bool
-
-instance Arbitrary (First' a) where
-  arbitrary =
-    frequency [
-      (1, return (First' {getFirst' = Nada}))
-      (1, return (First' {getFirst' = Only a}))
-    ]
 
 main2 :: IO ()
 main2 = do
