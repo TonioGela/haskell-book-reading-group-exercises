@@ -1,6 +1,7 @@
 module Chapter15 () where
 
 import Test.QuickCheck
+
 ----------------
 ---Semigroups---
 ----------------
@@ -217,54 +218,67 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Validation a b) where
         b <- arbitrary
         elements [Failure' a, Success' b]
 
----First instance---
-newtype ValidationFst a b = ValidationFst {unValidationFst :: Validation a b}
+instance Semigroup (Validation a b) where
+  (Failure' a) <> _ = Failure' a
+  (Success' _) <> (Failure' a) = Failure' a
+  (Success' b) <> (Success' _) = Success' b
+
+type ValidationAssoc a b = Validation a b
+                           -> Validation a b
+                           -> Validation a b
+                           -> Bool
+checkValidation :: IO ()
+checkValidation = quickCheck (semigroupAssoc :: ValidationAssoc String String)
+
+
+---Exercise 12---
+newtype AccumulateRight a b = AccumulateRight (Validation a b)
   deriving (Eq, Show)
 
 ---Non mi piace, troppo boilerplate
-instance Semigroup (ValidationFst a b) where
-  vf <> vs = case unValidationFst vf of
-    (Failure' _) -> vf
-    (Success' _) -> case unValidationFst vs of
-                      (Failure' _) -> vs
-                      (Success' _) -> vf
+instance (Semigroup b) => Semigroup (AccumulateRight a b) where
+   AccumulateRight (Failure' a) <> _ = AccumulateRight . Failure' $ a
+   AccumulateRight (Success' _) <> AccumulateRight(Failure' a)
+     = AccumulateRight . Failure' $ a
+   AccumulateRight (Success' x) <> AccumulateRight (Success' y)
+     = AccumulateRight . Success' $ (x <> y)
 
-instance (Arbitrary a, Arbitrary b) => Arbitrary (ValidationFst a b) where
-  arbitrary = ValidationFst <$> (arbitrary :: Gen (Validation a b))
 
-type ValidationFstAssoc a b = ValidationFst a b
-                              -> ValidationFst a b
-                              -> ValidationFst a b
-                              -> Bool
+instance (Arbitrary a, Arbitrary b) => Arbitrary (AccumulateRight a b) where
+  arbitrary = AccumulateRight <$> (arbitrary :: Gen (Validation a b))
 
-checkValidation :: IO ()
-checkValidation = quickCheck
-  (semigroupAssoc :: ValidationFstAssoc String String)
+type AccumulateRightAssoc a b = AccumulateRight a b
+                                -> AccumulateRight a b
+                                -> AccumulateRight a b
+                                -> Bool
 
----Exercise 12---
+checkAccumulateRight :: IO ()
+checkAccumulateRight = quickCheck
+  (semigroupAssoc :: AccumulateRightAssoc String String)
 
----Second instance---
-newtype ValidationSnd a b = ValidationSnd {unValidationSnd :: Validation a b}
+---Exercise 13---
+---Provo una cosa diversa---
+newtype AccumulateBoth a b = AccumulateBoth {unAccumulate :: Validation a b}
   deriving (Eq, Show)
 
-instance (Semigroup a, Semigroup b) => Semigroup (ValidationSnd a b) where
-  vf <> vs = case (unValidationSnd vf, unValidationSnd vs) of
+instance (Semigroup a, Semigroup b) => Semigroup (AccumulateBoth a b) where
+  vf <> vs = case (unAccumulate vf, unAccumulate vs) of
                (Failure' _, Success' _) -> vf
                (Success' _, Failure' _) -> vs
-               (Failure' x, Failure' y) -> ValidationSnd . Failure' $ (x <> y)
-               (Success' x, Success' y) -> ValidationSnd . Success' $ (x <> y)
+               (Failure' x, Failure' y) -> AccumulateBoth . Failure' $ (x <> y)
+               (Success' x, Success' y) -> AccumulateBoth . Success' $ (x <> y)
 
-instance (Arbitrary a, Arbitrary b) => Arbitrary (ValidationSnd a b) where
-  arbitrary = ValidationSnd <$> (arbitrary :: Gen (Validation a b))
+instance (Arbitrary a, Arbitrary b) => Arbitrary (AccumulateBoth a b) where
+  arbitrary = AccumulateBoth <$> (arbitrary :: Gen (Validation a b))
 
-type ValidationSndAssoc a b = ValidationSnd a b
-                              -> ValidationSnd a b
-                              -> ValidationSnd a b
+type AccumulateBothAssoc a b = AccumulateBoth a b
+                              -> AccumulateBoth a b
+                              -> AccumulateBoth a b
                               -> Bool
 
-checkValidationSnd :: IO ()
-checkValidationSnd = quickCheck
-  (semigroupAssoc :: ValidationSndAssoc String String)
+checkAccumulateBoth :: IO ()
+checkAccumulateBoth = quickCheck
+  (semigroupAssoc :: AccumulateBothAssoc String String)
 
 -------------
 ---Monoids---
