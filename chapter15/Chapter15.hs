@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module Chapter15 () where
 
 import Test.QuickCheck
