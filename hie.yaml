@@ -11,3 +11,6 @@ cradle:
 
     - path: "chapter15/Chapter15.hs"
       component: "lib:Emraors"
+    
+    - path: "chapter16/Chapter16.hs"
+      components: "lib:Emraors"

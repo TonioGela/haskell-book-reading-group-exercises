@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.0.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -15,6 +15,7 @@ library
       Chapter13
       Chapter14
       Chapter15
+      Chapter16
   other-modules:
       Paths_Emraors
   hs-source-dirs:
@@ -22,6 +23,7 @@ library
       chapter13
       chapter14
       chapter15
+      chapter16
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-unused-top-binds
   build-depends:
       QuickCheck
