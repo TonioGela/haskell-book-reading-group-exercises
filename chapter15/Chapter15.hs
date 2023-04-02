@@ -1,4 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 module Chapter15 () where
 
 import Test.QuickCheck
@@ -19,10 +20,8 @@ instance Arbitrary Trivial where
 semigroupAssoc :: (Eq m, Semigroup m) => m -> m -> m -> Bool
 semigroupAssoc a b c = (a <> (b <> c)) == ((a <> b) <> c)
 
-type TrivialAssoc = Trivial -> Trivial -> Trivial -> Bool
-
 checkTrivial :: IO ()
-checkTrivial = quickCheck (semigroupAssoc :: TrivialAssoc)
+checkTrivial = quickCheck (semigroupAssoc @Trivial)
 
 ---Exercise 2---
 newtype Identity a = Identity a
@@ -34,10 +33,8 @@ instance (Semigroup a) => Semigroup (Identity a) where
 instance (Arbitrary a) => Arbitrary (Identity a) where
   arbitrary = Identity <$> arbitrary
 
-type IdentityAssoc a = Identity a -> Identity a -> Identity a -> Bool
-
 checkIdentity :: IO ()
-checkIdentity = quickCheck (semigroupAssoc :: IdentityAssoc String)
+checkIdentity = quickCheck (semigroupAssoc @(Identity String))
 
 ---Exercise 3---
 data Two a b = Two a b
@@ -49,10 +46,8 @@ instance (Semigroup a, Semigroup b) => Semigroup (Two a b) where
 instance (Arbitrary a, Arbitrary b) => Arbitrary (Two a b) where
   arbitrary = Two <$> arbitrary <*> arbitrary
 
-type TwoAssoc a b = Two a b -> Two a b -> Two a b -> Bool
-
 checkTwo :: IO ()
-checkTwo = quickCheck (semigroupAssoc :: TwoAssoc String String)
+checkTwo = quickCheck (semigroupAssoc @(Two String String))
 
 ---Exercise 4---
 ---Come renderlo pointwise?
@@ -68,10 +63,8 @@ instance (Arbitrary a, Arbitrary b, Arbitrary c)
          => Arbitrary (Three a b c) where
   arbitrary = Three <$> arbitrary <*> arbitrary <*> arbitrary
 
-type ThreeAssoc a b c = Three a b c -> Three a b c -> Three a b c -> Bool
-
 checkThree :: IO ()
-checkThree = quickCheck (semigroupAssoc :: ThreeAssoc String String String)
+checkThree = quickCheck (semigroupAssoc @(Three String String String))
 
 ---Exercise 5---
 data Four a b c d = Four a b c d
@@ -86,13 +79,8 @@ instance (Arbitrary a, Arbitrary b, Arbitrary c, Arbitrary d)
          => Arbitrary (Four a b c d) where
   arbitrary = Four <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
-type FourAssoc a b c d = Four a b c d
-                         -> Four a b c d
-                         -> Four a b c d
-                         -> Bool
-
 checkFour :: IO ()
-checkFour = quickCheck (semigroupAssoc :: FourAssoc String String String String)
+checkFour = quickCheck (semigroupAssoc @(Four String String String String))
 
 ---Exercise 6---
 newtype BoolConj = BoolConj Bool
@@ -106,10 +94,8 @@ instance Semigroup BoolConj where
 instance Arbitrary BoolConj where
   arbitrary = BoolConj <$> arbitrary
 
-type BoolConjAssoc = BoolConj -> BoolConj -> BoolConj -> Bool
-
 checkConj :: IO ()
-checkConj = quickCheck (semigroupAssoc :: BoolConjAssoc)
+checkConj = quickCheck (semigroupAssoc @BoolConj)
 
 ---Exercise 7---
 newtype BoolDisj = BoolDisj Bool
@@ -123,10 +109,8 @@ instance Semigroup BoolDisj where
 instance Arbitrary BoolDisj where
   arbitrary = BoolDisj <$> arbitrary
 
-type BoolDisjAssoc = BoolDisj -> BoolDisj -> BoolDisj -> Bool
-
 checkDisj :: IO ()
-checkDisj = quickCheck (semigroupAssoc :: BoolDisjAssoc)
+checkDisj = quickCheck (semigroupAssoc @BoolDisj)
 
 ---Exercise 8---
 
@@ -145,10 +129,8 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Or a b) where
     b <- arbitrary
     elements [Fst a, Snd b]
 
-type OrAssoc a b = Or a b -> Or a b -> Or a b -> Bool
-
 checkOr :: IO ()
-checkOr = quickCheck (semigroupAssoc :: OrAssoc String String)
+checkOr = quickCheck (semigroupAssoc @(Or String String))
 
 ---Exercise 9---
 
@@ -172,14 +154,8 @@ combineAssoc :: (Eq b, Semigroup b) => a
 combineAssoc a cf cg ch = (unCombine $ (cf <> cg) <> ch) a ==
                           (unCombine $ cf <> (cg <> ch)) a
 
-type CombineAssoc a b = a
-                        -> Combine a b
-                        -> Combine a b
-                        -> Combine a b
-                        -> Bool
-
 checkCombine :: IO ()
-checkCombine = quickCheck (combineAssoc :: CombineAssoc String String)
+checkCombine = quickCheck (combineAssoc @String @String)
 
 ---Exercise 10---
 
@@ -202,13 +178,10 @@ compAssoc :: (Eq a, Semigroup a) => a
 compAssoc a cf cg ch = (unComp $ (cf <> cg) <> ch) a ==
                        (unComp $ cf <> (cg <> ch)) a
 
-type CompAssoc a = a -> Comp a -> Comp a -> Comp a -> Bool
-
 checkComp :: IO ()
-checkComp = quickCheck (compAssoc :: CompAssoc String)
+checkComp = quickCheck (compAssoc @String)
 
 ---Exercise 11---
----TODO: Ho letto male gli esercizi e sono partito per la tangente wrappando il datatype, rifattorizzare come da libro.
 
 data Validation a b = Failure' a | Success' b
   deriving (Eq, Show)
@@ -224,13 +197,8 @@ instance Semigroup (Validation a b) where
   (Success' _) <> (Failure' a) = Failure' a
   (Success' b) <> (Success' _) = Success' b
 
-type ValidationAssoc a b = Validation a b
-                           -> Validation a b
-                           -> Validation a b
-                           -> Bool
 checkValidation :: IO ()
-checkValidation = quickCheck (semigroupAssoc :: ValidationAssoc String String)
-
+checkValidation = quickCheck (semigroupAssoc @(Validation String String))
 
 ---Exercise 12---
 newtype AccumulateRight a b = AccumulateRight (Validation a b)
@@ -248,14 +216,9 @@ instance (Semigroup b) => Semigroup (AccumulateRight a b) where
 instance (Arbitrary a, Arbitrary b) => Arbitrary (AccumulateRight a b) where
   arbitrary = AccumulateRight <$> (arbitrary :: Gen (Validation a b))
 
-type AccumulateRightAssoc a b = AccumulateRight a b
-                                -> AccumulateRight a b
-                                -> AccumulateRight a b
-                                -> Bool
-
 checkAccumulateRight :: IO ()
 checkAccumulateRight = quickCheck
-  (semigroupAssoc :: AccumulateRightAssoc String String)
+  (semigroupAssoc @(AccumulateRight String String))
 
 ---Exercise 13---
 ---Provo una cosa diversa---
@@ -272,14 +235,9 @@ instance (Semigroup a, Semigroup b) => Semigroup (AccumulateBoth a b) where
 instance (Arbitrary a, Arbitrary b) => Arbitrary (AccumulateBoth a b) where
   arbitrary = AccumulateBoth <$> (arbitrary :: Gen (Validation a b))
 
-type AccumulateBothAssoc a b = AccumulateBoth a b
-                              -> AccumulateBoth a b
-                              -> AccumulateBoth a b
-                              -> Bool
-
 checkAccumulateBoth :: IO ()
 checkAccumulateBoth = quickCheck
-  (semigroupAssoc :: AccumulateBothAssoc String String)
+  (semigroupAssoc @(AccumulateBoth String String))
 
 -------------
 ---Monoids---
@@ -298,9 +256,9 @@ instance Monoid Trivial where
 
 checkTrivialMon :: IO ()
 checkTrivialMon = do
-  quickCheck (semigroupAssoc :: TrivialAssoc)
-  quickCheck (monoidLeftIdentity :: Trivial -> Bool)
-  quickCheck (monoidRightIdentity :: Trivial -> Bool)
+  quickCheck (semigroupAssoc @Trivial)
+  quickCheck (monoidLeftIdentity @Trivial)
+  quickCheck (monoidRightIdentity @Trivial)
 
 ---Exercise 2---
 
@@ -310,9 +268,9 @@ instance (Monoid a) => Monoid (Identity a) where
 
 checkIdentityMon :: IO ()
 checkIdentityMon = do
-  quickCheck (semigroupAssoc :: IdentityAssoc String)
-  quickCheck (monoidLeftIdentity :: Identity String -> Bool)
-  quickCheck (monoidRightIdentity :: Identity String -> Bool)
+  quickCheck (semigroupAssoc @(Identity String))
+  quickCheck (monoidLeftIdentity @(Identity String))
+  quickCheck (monoidRightIdentity @(Identity String))
 
 ---Exercise 3---
 
@@ -322,9 +280,9 @@ instance (Monoid a, Monoid b) => Monoid (Two a b) where
 
 checkTwoMon :: IO ()
 checkTwoMon = do
-  quickCheck (semigroupAssoc :: TwoAssoc String String)
-  quickCheck (monoidLeftIdentity :: Two String String -> Bool)
-  quickCheck (monoidRightIdentity :: Two String String -> Bool)
+  quickCheck (semigroupAssoc @(Two String String))
+  quickCheck (monoidLeftIdentity @(Two String String))
+  quickCheck (monoidRightIdentity @(Two String String))
 
 ---Exercise 4-5---
 ---True e False sono gli elementi neutri.
@@ -343,12 +301,8 @@ monoidRightIdentityCombine a cf = unCombine (cf <> mempty) a == unCombine cf a
 
 checkCombineMon :: IO ()
 checkCombineMon = do
-  quickCheck (monoidLeftIdentityCombine :: String
-                                           -> Combine String String
-                                           -> Bool)
-  quickCheck (monoidRightIdentityCombine :: String
-                                            -> Combine String String
-                                            -> Bool)
+  quickCheck (monoidLeftIdentityCombine @String @String)
+  quickCheck (monoidRightIdentityCombine @String @String)
 
 ---Exercise 7---
 ---Come sopra---
@@ -380,12 +334,6 @@ memAssoc :: (Eq a, Eq s, Semigroup a) => s
 memAssoc s cf cg ch = (runMem $ (cf <> cg) <> ch) s ==
                       (runMem $ cf <> (cg <> ch)) s
 
-type MemAssoc s a = s
-                    -> Mem s a
-                    -> Mem s a
-                    -> Mem s a
-                    -> Bool
-
 monoidLeftIdentityMem :: (Eq a, Eq s, Monoid a) => s -> Mem s a -> Bool
 monoidLeftIdentityMem s cf = runMem (mempty <> cf) s == runMem cf s
 
@@ -394,11 +342,6 @@ monoidRightIdentityMem s cf = runMem (cf <> mempty) s == runMem cf s
 
 checkMem :: IO ()
 checkMem = do
-  quickCheck (memAssoc :: MemAssoc String String)
-  quickCheck (monoidLeftIdentityMem :: String
-                                       -> Mem String String
-                                       -> Bool)
-  quickCheck (monoidRightIdentityMem :: String
-                                        -> Mem String String
-                                        -> Bool)
-
+  quickCheck (memAssoc @String @String)
+  quickCheck (monoidLeftIdentityMem @String @String)
+  quickCheck (monoidRightIdentityMem @String @String)
