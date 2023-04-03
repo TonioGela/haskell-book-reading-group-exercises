@@ -124,10 +124,8 @@ instance Semigroup (Or a b) where
 
 ---c'è un modo più elegante di scriverlo?
 instance (Arbitrary a, Arbitrary b) => Arbitrary (Or a b) where
-  arbitrary =  do
-    a <- arbitrary
-    b <- arbitrary
-    elements [Fst a, Snd b]
+  arbitrary = frequency [(1, Fst <$> arbitrary), (1, Snd <$> arbitrary)]
+
 
 checkOr :: IO ()
 checkOr = quickCheck (semigroupAssoc @(Or String String))
@@ -187,10 +185,8 @@ data Validation a b = Failure' a | Success' b
   deriving (Eq, Show)
 
 instance (Arbitrary a, Arbitrary b) => Arbitrary (Validation a b) where
-  arbitrary =  do
-        a <- arbitrary
-        b <- arbitrary
-        elements [Failure' a, Success' b]
+  arbitrary = frequency [(1, Failure' <$> arbitrary)
+                        , (1, Success' <$> arbitrary)]
 
 instance Semigroup (Validation a b) where
   (Failure' a) <> _ = Failure' a
@@ -214,7 +210,7 @@ instance (Semigroup b) => Semigroup (AccumulateRight a b) where
 
 
 instance (Arbitrary a, Arbitrary b) => Arbitrary (AccumulateRight a b) where
-  arbitrary = AccumulateRight <$> (arbitrary :: Gen (Validation a b))
+  arbitrary = AccumulateRight <$> (arbitrary @(Validation a b))
 
 checkAccumulateRight :: IO ()
 checkAccumulateRight = quickCheck
