@@ -1,16 +1,16 @@
 cradle:
   cabal:
-    - path: "chapter12/Chapter12.hs"
+    - path: "chapter12"
       component: "lib:Emraors"
 
-    - path: "chapter13/Chapter13.hs"
+    - path: "chapter13"
       component: "lib:Emraors"
 
-    - path: "chapter14/Chapter14.hs"
+    - path: "chapter14"
       component: "lib:Emraors"
 
-    - path: "chapter15/Chapter15.hs"
+    - path: "chapter15"
       component: "lib:Emraors"
-    
-    - path: "chapter16/Chapter16.hs"
-      components: "lib:Emraors"
+
+    - path: "chapter16"
+      component: "lib:Emraors"
