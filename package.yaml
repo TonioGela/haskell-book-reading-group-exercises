@@ -8,7 +8,9 @@ dependencies:
   - random >= 1.2.1.1
   - split 
   - transformers
-  - mtl 
+  - mtl
+  - containers
+  - nonempty-containers
 
 data-dir: data
 

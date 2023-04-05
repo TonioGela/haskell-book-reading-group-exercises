@@ -28,8 +28,10 @@ library
   build-depends:
       QuickCheck
     , base >=4.7 && <5
+    , containers
     , hspec
     , mtl
+    , nonempty-containers
     , random >=1.2.1.1
     , split
     , transformers
