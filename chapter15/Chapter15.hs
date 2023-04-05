@@ -1,7 +1,12 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+
 module Chapter15 () where
 
+import Control.Monad
+import qualified Data.Map as Map
+import qualified Data.List.NonEmpty as NEL
+import qualified Data.Map.NonEmpty as NEM
 import Test.QuickCheck
 
 ----------------
@@ -15,7 +20,7 @@ instance Semigroup Trivial where
   _ <> _ = Trivial
 
 instance Arbitrary Trivial where
-  arbitrary = return Trivial
+  arbitrary = pure Trivial
 
 semigroupAssoc :: (Eq m, Semigroup m) => m -> m -> m -> Bool
 semigroupAssoc a b c = (a <> (b <> c)) == ((a <> b) <> c)
@@ -144,17 +149,17 @@ instance (Semigroup b) => Semigroup (Combine a b) where
 instance (CoArbitrary a, Arbitrary b) => Arbitrary (Combine a b) where
   arbitrary = Combine <$> arbitrary
 
-combineAssoc :: (Eq b, Semigroup b) => a
-                                       -> Combine a b
-                                       -> Combine a b
-                                       -> Combine a b
-                                       -> Bool
+combineAssoc :: forall a b. (Eq b, Semigroup b) => a
+                                                   -> Combine a b
+                                                   -> Combine a b
+                                                   -> Combine a b
+                                                   -> Bool
 combineAssoc a cf cg ch = (unCombine $ (cf <> cg) <> ch) a ==
                           (unCombine $ cf <> (cg <> ch)) a
 
 checkCombine :: IO ()
-checkCombine = quickCheck (combineAssoc @String @String)
-
+checkCombine = quickCheck (combineAssoc @Integer @String)
+---usare un monoide non commutativo
 ---Exercise 10---
 
 newtype Comp a = Comp { unComp :: a -> a }
@@ -341,3 +346,60 @@ checkMem = do
   quickCheck (memAssoc @String @String)
   quickCheck (monoidLeftIdentityMem @String @String)
   quickCheck (monoidRightIdentityMem @String @String)
+
+
+
+
+----Esercizio proposto da Paolino
+
+neutralTrie :: (Ord a) => Trie a
+neutralTrie = Trie mempty
+
+newtype Trie a = Trie (Map.Map a (Trie a))
+  deriving (Show, Eq)
+
+data TrieL a = TrieL (NEM.NEMap a (TrieL a)) | L
+  deriving (Show, Eq)
+
+trieToTrieL :: Trie a -> TrieL a
+trieToTrieL (Trie NEM.IsEmpty) = L
+trieToTrieL (Trie (NEM.IsNonEmpty l)) = TrieL $ trieToTrieL <$> l
+
+trieLToTrie :: TrieL a -> Trie a
+trieLToTrie L = Trie Map.empty
+trieLToTrie (TrieL l) = Trie $ trieLToTrie <$> NEM.IsNonEmpty l
+
+
+
+instance (Arbitrary a, Ord a) => Arbitrary (TrieL a) where
+  arbitrary = sized arbTrieL
+
+arbTrieL :: (Arbitrary a, Ord a) => Int -> Gen (TrieL a)
+arbTrieL 0 = pure L
+arbTrieL n = do
+  (Positive m) <- arbitrary
+  let n' = n `div` (m + 1)
+  tries <- replicateM m (arbTrieL n')
+  xs <- listOf1 arbitrary
+  return $ TrieL (NEM.fromList (NEL.zip (NEL.fromList xs)
+                                (NEL.fromList tries)))
+
+
+instance (Arbitrary a, Ord a) => Arbitrary (Trie a) where
+  arbitrary = sized arbTrie
+
+arbTrie :: (Arbitrary a, Ord a) => Int -> Gen (Trie a)
+arbTrie 0 = pure $ Trie Map.empty
+arbTrie n = do
+  (Positive m) <- arbitrary
+  let n' = n `div` (m + 1)
+  tries <- replicateM m (arbTrie n')
+  xs <- listOf1 arbitrary
+  pure $ Trie (Map.fromList (Prelude.zip xs tries))
+
+
+inv1 :: (Eq a, Show a) => Trie a -> Property
+inv1 t = (trieLToTrie . trieToTrieL $ t) === t
+
+inv2 :: (Eq a, Show a) => TrieL a -> Property
+inv2 tl = (trieToTrieL . trieLToTrie $ tl) === tl
