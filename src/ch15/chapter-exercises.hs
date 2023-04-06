@@ -2,6 +2,8 @@ module Ch15.ChapterExercises where
 
 import Test.QuickCheck
 import Data.Semigroup
+import qualified Data.Map as M
+import qualified Data.Map.NonEmpty as NEM
 
 semigroupAssoc :: (Eq m, Semigroup m) => m -> m -> m -> Bool
 semigroupAssoc a b c = (a <> b) <> c == a <> (b <> c)
@@ -168,7 +170,7 @@ main8 :: IO ()
 main8 = verboseCheck (semigroupAssoc :: ((Or Bool Integer) -> (Or Bool Integer) -> (Or Bool Integer) -> Bool))
 
 -- TODO missing some exercises
-
+newtype Combine a b = Combine { unCombine :: (a -> b) }
 
 -- monoids
 -- 1
@@ -229,3 +231,23 @@ main16 = do
 
 -- 6
 -- TODO missing some exercises
+
+
+data Trie a = Trie (M.Map a (Trie a)) deriving (Eq, Show)
+
+instance (Ord a) => Semigroup (Trie a) where
+  a <> (Trie (NEM.IsEmpty)) = a
+  (Trie (NEM.IsEmpty)) <> b = b
+  (Trie a) <> (Trie b)      = Trie (M.union a b)
+
+instance (Ord a, Arbitrary a) => Arbitrary (Trie a) where
+  arbitrary = do
+    a <- arbitrary
+    elements [
+      Trie (M.empty),
+      Trie (M.take 1 a)
+      ]
+
+main0 :: IO ()
+main0 = do
+  verboseCheck (semigroupAssoc :: Trie String -> Trie String -> Trie String -> Bool)
