@@ -11,6 +11,7 @@ dependencies:
   - mtl
   - containers
   - nonempty-containers
+  - checkers
 
 data-dir: data
 
@@ -33,3 +34,4 @@ library:
     - chapter14
     - chapter15
     - chapter16
+    - chapter17
