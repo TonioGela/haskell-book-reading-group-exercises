@@ -348,18 +348,41 @@ checkMem = do
   quickCheck (monoidRightIdentityMem @String @String)
 
 
-
-
 ----Esercizio proposto da Paolino
-
-neutralTrie :: (Ord a) => Trie a
-neutralTrie = Trie mempty
 
 newtype Trie a = Trie (Map.Map a (Trie a))
   deriving (Show, Eq)
 
+instance (Semigroup a, Ord a) => Semigroup (Trie a) where
+  (Trie l) <> (Trie m) = Trie $ Map.unionWith (<>) l m
+
+instance (Monoid a, Ord a) => Monoid (Trie a) where
+  mempty = Trie mempty
+  mappend = (<>)
+
+instance (Arbitrary a, Ord a) => Arbitrary (Trie a) where
+  arbitrary = sized arbTrie
+
+arbTrie :: (Arbitrary a, Ord a) => Int -> Gen (Trie a)
+arbTrie 0 = pure $ Trie Map.empty
+arbTrie n = do
+  (Positive m) <- arbitrary
+  tries <- replicateM m $ arbTrie $ n `div` m
+  xs <- listOf1 arbitrary
+  pure $ Trie (Map.fromList (zip xs tries))
+
+checkTrieMon :: IO ()
+checkTrieMon = do
+  quickCheck (semigroupAssoc @(Trie String))
+  quickCheck (monoidLeftIdentity @(Trie String))
+  quickCheck (monoidRightIdentity @(Trie String))
+
+---Rappresentazione alternativa a Trie
+
 data TrieL a = TrieL (NEM.NEMap a (TrieL a)) | L
   deriving (Show, Eq)
+
+---Le due rappresentazioni sono equivalenti
 
 trieToTrieL :: Trie a -> TrieL a
 trieToTrieL (Trie NEM.IsEmpty) = L
@@ -368,8 +391,6 @@ trieToTrieL (Trie (NEM.IsNonEmpty l)) = TrieL $ trieToTrieL <$> l
 trieLToTrie :: TrieL a -> Trie a
 trieLToTrie L = Trie Map.empty
 trieLToTrie (TrieL l) = Trie $ trieLToTrie <$> NEM.IsNonEmpty l
-
-
 
 instance (Arbitrary a, Ord a) => Arbitrary (TrieL a) where
   arbitrary = sized arbTrieL
@@ -384,22 +405,13 @@ arbTrieL n = do
   return $ TrieL (NEM.fromList (NEL.zip (NEL.fromList xs)
                                 (NEL.fromList tries)))
 
-
-instance (Arbitrary a, Ord a) => Arbitrary (Trie a) where
-  arbitrary = sized arbTrie
-
-arbTrie :: (Arbitrary a, Ord a) => Int -> Gen (Trie a)
-arbTrie 0 = pure $ Trie Map.empty
-arbTrie n = do
-  (Positive m) <- arbitrary
-  let n' = n `div` (m + 1)
-  tries <- replicateM m (arbTrie n')
-  xs <- listOf1 arbitrary
-  pure $ Trie (Map.fromList (Prelude.zip xs tries))
-
-
 inv1 :: (Eq a, Show a) => Trie a -> Property
 inv1 t = (trieLToTrie . trieToTrieL $ t) === t
 
 inv2 :: (Eq a, Show a) => TrieL a -> Property
 inv2 tl = (trieToTrieL . trieLToTrie $ tl) === tl
+
+checkIso :: IO ()
+checkIso = do
+  quickCheck (inv1 @String)
+  quickCheck (inv2 @String)
