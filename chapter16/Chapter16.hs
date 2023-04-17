@@ -94,7 +94,7 @@ instance Functor Possibly where
   fmap f (Yeppers a) = Yeppers . f $ a
 
 instance (Arbitrary a) => Arbitrary (Possibly a) where
-  arbitrary = arbitrary >>= (\a -> elements [LolNope, Yeppers a])
+  arbitrary = frequency [(1, return LolNope), (1, Yeppers <$> arbitrary)]
 
 checkPossibly :: IO ()
 checkPossibly = do
@@ -113,10 +113,7 @@ instance Functor (Sum a) where
   fmap _ (First a) = First a
 
 instance (Arbitrary a, Arbitrary b) => Arbitrary (Sum a b) where
-  arbitrary = do
-    a <- arbitrary
-    b <- arbitrary
-    elements [First a, Second b]
+  arbitrary = frequency [(1, First <$> arbitrary), (1, Second <$> arbitrary)]
 
 ---Tutte ste ripetizioni potrebbero essere evitate se potessi passare tipi a ---funzioni
 checkSum :: IO ()
