@@ -6,7 +6,7 @@
 module Chapter16 () where
 
 import Test.QuickCheck
-
+import Control.Arrow ()
 
 
 functorIdentity :: (Functor f, Eq (f a)) => f a -> Bool
@@ -331,3 +331,62 @@ functorCompose'' st x (Fun _ f) (Fun _ g) =
 
 checkTalkToMe :: IO ()
 checkTalkToMe = quickCheck (functorCompose'' @String @String @String)
+
+
+
+
+data Tree a = Leaf | Node (Tree a) a (Tree a)
+
+instance Functor Tree where
+    fmap :: (a -> b) -> Tree a -> Tree b
+    fmap _ Leaf = Leaf
+    fmap f (Node l x r) = Node (fmap f l) (f x) (fmap f r)
+
+data TreeL a = LeafL a | NodeL (TreeL a) (TreeL a)
+
+instance Functor TreeL where
+    fmap :: (a -> b) -> TreeL a -> TreeL b
+    fmap f (LeafL a) = LeafL (f a)
+    fmap f (NodeL l r) = NodeL (fmap f l) (fmap f r)
+
+
+data Trie a = Trie [(a, Trie a)]
+  deriving (Show, Eq)
+
+{-
+instance Functor Trie where
+    fmap f (Trie xs) = Trie $ fmap (f (***) fmap f) xs
+-}
+
+
+newtype F a = F (Int -> (a,a))
+
+instance Functor F where
+    fmap f (F g) = F $ \x -> let (a,b) = g x in (f a, f b)
+
+
+
+newtype C a = C ((a -> Int) -> Int) -- si puo'
+
+runC :: C Int -> Int
+runC (C f) = f id
+
+instance Applicative C where
+    pure a = C $ \h -> h a
+    (C f) <*> (C g) = C $ \h -> f $ \a -> g $ h . a
+
+instance Functor C where
+    fmap :: (a -> b) -> C a -> C b
+    fmap f (C g) = C $ \h -> g $ h . f
+
+--- Dimostrazione che C è un funtore
+
+--- fmap id (C g) = C $ \h -> g $ (h . id)
+            ---   = C $ \h -> g h
+            ---   = C g
+
+--- fmap f . fmap l (C g) = fmap f $ (C \h -> g $ (h . l))
+ ---                      = C \h' -> \h -> g $ (h . l) $ h' . f  (definizione di $)
+ ---                      = C \h -> g (h . f . l)
+ ---                      = C \h -> g (h . (f . l))
+ ---                      = fmap (f . l) (C g)
