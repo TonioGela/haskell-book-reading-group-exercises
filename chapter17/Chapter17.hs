@@ -6,6 +6,7 @@ import Test.QuickCheck
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
 import Data.Bifunctor
+import Control.Monad
 ---------------
 ---Utilities---
 ---------------
@@ -271,7 +272,7 @@ instance Functor Tree where
   fmap f (Node l x r) = Node (fmap f l) (f x) (fmap f r)
 
 instance Applicative Tree where
-  pure x = Node Leaf x Leaf
+  pure a = Node (pure a) a (pure a)
   (<*>) Leaf _ = Leaf
   (<*>) _ Leaf = Leaf
   (<*>) (Node l f r) (Node l' x r') = Node (l <*> l') (f x) (r <*> r')
@@ -292,6 +293,7 @@ checkTree = quickBatch $ applicative
                                    @String
                                    @Char
                                    @String)
+
 ---2---
 
 data TreeL a = LeafL a | NodeL (TreeL a) (TreeL a)
@@ -334,21 +336,30 @@ instance Functor Trie where
 
 instance Applicative Trie where
   pure x = Trie [(x, pure x)]
-  (<*>) (Trie fs) (Trie xs) = undefined
+  (<*>) (Trie fs) (Trie xs) = Trie $ (\(f, ft) (a, ta) -> (f a, ft <*> ta))
+                                     <$> fs <*> xs
 
 instance Arbitrary a => Arbitrary (Trie a) where
-  arbitrary = sized go
-    where go 0 = Trie <$> arbitrary
-          go n = Trie <$> vectorOf n ((,) <$> arbitrary <*> go (n `div` 2))
+  arbitrary = sized arbTrie
+
+--- pulire sta cosa
+arbTrie :: Arbitrary a => Int -> Gen (Trie a)
+arbTrie 0 = pure . Trie $ []
+arbTrie n = do
+  (Positive m) <- arbitrary
+  let n' = n `div` (m + 1)
+  tries <- replicateM m (arbTrie n')
+  xs <- listOf1 arbitrary
+  return $ Trie $ zip xs tries
 
 instance Eq a => EqProp (Trie a) where (=-=) = eq
 
 checkTrie :: IO ()
 checkTrie = quickBatch $ applicative
                            (trigger @Trie
-                                    @String
-                                    @Char
-                                    @String)
+                                    @Int
+                                    @Int
+                                    @Int)
 
 ---4---
 
