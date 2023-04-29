@@ -1,10 +1,11 @@
 {-# LANGUAGE TypeApplications #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 module Chapter17 () where
 
 import Test.QuickCheck
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
-
+import Data.Bifunctor
 ---------------
 ---Utilities---
 ---------------
@@ -266,27 +267,117 @@ data Tree a = Leaf | Node (Tree a) a (Tree a)
   deriving (Eq, Show)
 
 instance Functor Tree where
-    fmap _ Leaf = Leaf
-    fmap f (Node l x r) = Node (fmap f l) (f x) (fmap f r)
+  fmap _ Leaf = Leaf
+  fmap f (Node l x r) = Node (fmap f l) (f x) (fmap f r)
 
 instance Applicative Tree where
-    pure x = Node Leaf x Leaf
-    (<*>) Leaf _ = Leaf
-    (<*>) _ Leaf = Leaf
-    (<*>) (Node l f r) (Node l' x r') = Node (l <*> l') (f x) (r <*> r')
+  pure x = Node Leaf x Leaf
+  (<*>) Leaf _ = Leaf
+  (<*>) _ Leaf = Leaf
+  (<*>) (Node l f r) (Node l' x r') = Node (l <*> l') (f x) (r <*> r')
 
---TODO: implementare Arbitrary per Tree (con un bound sulla profondità)
+instance Arbitrary a => Arbitrary (Tree a) where
+   arbitrary = sized tree'
+     where tree' 0 = pure Leaf
+           tree' n = frequency [(1, pure Leaf)
+                               ,(3, Node <$> tree' (n `div` 2)
+                                         <*> arbitrary
+                                         <*> tree' (n `div` 2))]
+
+instance Eq a => EqProp (Tree a) where (=-=) = eq
+
+checkTree :: IO ()
+checkTree = quickBatch $ applicative
+                          (trigger @Tree
+                                   @String
+                                   @Char
+                                   @String)
 ---2---
 
 data TreeL a = LeafL a | NodeL (TreeL a) (TreeL a)
+  deriving (Eq, Show)
 
 instance Functor TreeL where
-    fmap f (LeafL a) = LeafL (f a)
-    fmap f (NodeL l r) = NodeL (fmap f l) (fmap f r)
+  fmap f (LeafL a) = LeafL (f a)
+  fmap f (NodeL l r) = NodeL (fmap f l) (fmap f r)
 
 instance Applicative TreeL where
-    pure = LeafL
-    (<*>) (LeafL f) (LeafL x) = LeafL . f $ x
-    (<*>) (LeafL f) (NodeL l r) = NodeL (fmap f l) (fmap f r)
-    (<*>) (NodeL l r) (LeafL x) = NodeL (fmap ($ x) l) (fmap ($ x) r)
-    (<*>) (NodeL l r) (NodeL l' r') = NodeL (l <*> l') (r <*> r')
+  pure = LeafL
+  (<*>) (LeafL f) (LeafL x) = LeafL . f $ x
+  (<*>) (LeafL f) (NodeL l r) = NodeL (fmap f l) (fmap f r)
+  (<*>) (NodeL l r) (LeafL x) = NodeL (($ x) <$> l) (($ x) <$> r)
+  (<*>) (NodeL l r) (NodeL l' r') = NodeL (l <*> l') (r <*> r')
+
+instance Arbitrary a => Arbitrary (TreeL a) where
+  arbitrary = sized tree'
+    where tree' 0 = LeafL <$> arbitrary
+          tree' n = frequency [(1, LeafL <$> arbitrary)
+                              ,(3, NodeL <$> tree' (n `div` 2)
+                                         <*> tree' (n `div` 2))]
+
+instance Eq a => EqProp (TreeL a) where (=-=) = eq
+
+checkTreeL :: IO ()
+checkTreeL = quickBatch $ applicative
+                           (trigger @TreeL
+                                    @String
+                                    @Char
+                                    @String)
+
+---3---
+
+newtype Trie a = Trie [(a, Trie a)]
+  deriving (Show, Eq)
+
+instance Functor Trie where
+  fmap f (Trie xs) = Trie $ map (bimap f (fmap f)) xs
+
+instance Applicative Trie where
+  pure x = Trie [(x, pure x)]
+  (<*>) (Trie fs) (Trie xs) = undefined
+
+
+instance Arbitrary a => Arbitrary (Trie a) where
+  arbitrary = sized go
+    where go 0 = Trie <$> arbitrary
+          go n = Trie <$> vectorOf n ((,) <$> arbitrary <*> go (n `div` 2))
+
+instance Eq a => EqProp (Trie a) where (=-=) = eq
+
+checkTrie :: IO ()
+checkTrie = quickBatch $ applicative
+                           (trigger @Trie
+                                    @String
+                                    @Char
+                                    @String)
+
+---4---
+
+newtype F a = F (Int -> (a,a))
+  deriving Show
+
+instance Functor F where
+    fmap f (F g) = F $ \x -> let (a,b) = g x in (f a, f b)
+
+instance Applicative F where
+  pure = undefined
+  (<*>) = undefined
+
+instance Arbitrary a => Arbitrary (F a) where
+  arbitrary = F <$> arbitrary
+
+---Qui dovrei fare come ho fatto per TalkToMe, ma non ho voglia---
+
+---5---
+
+newtype C a = C ((a -> Int) -> Int) -- si puo'
+
+runC :: C Int -> Int
+runC (C f) = f id
+
+instance Functor C where
+  fmap f (C g) = C $ \h -> g $ h . f
+
+instance Applicative C where
+  pure = undefined
+  (<*>) = undefined
