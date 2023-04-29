@@ -336,7 +336,6 @@ instance Applicative Trie where
   pure x = Trie [(x, pure x)]
   (<*>) (Trie fs) (Trie xs) = undefined
 
-
 instance Arbitrary a => Arbitrary (Trie a) where
   arbitrary = sized go
     where go 0 = Trie <$> arbitrary
@@ -357,11 +356,11 @@ newtype F a = F (Int -> (a,a))
   deriving Show
 
 instance Functor F where
-    fmap f (F g) = F $ \x -> let (a,b) = g x in (f a, f b)
+    fmap f (F g) = F $ \x -> let (a, b) = g x in (f a, f b)
 
 instance Applicative F where
-  pure = undefined
-  (<*>) = undefined
+  pure a = F $ const (a, a)
+  (<*>) (F fa) (F g) = F $ \n -> let (f1, f2) = fa n in bimap f1 f2 (g n)
 
 instance Arbitrary a => Arbitrary (F a) where
   arbitrary = F <$> arbitrary
@@ -379,5 +378,7 @@ instance Functor C where
   fmap f (C g) = C $ \h -> g $ h . f
 
 instance Applicative C where
-  pure = undefined
-  (<*>) = undefined
+  pure a = C $ \h -> h a
+  (<*>) (C ff) (C g) = C $ \h -> ff $ \f -> g $ h . f
+-- f :: a -> b è la variabile che assumo e di cui poi faccio il discard
+-- ff :: ((a -> b) -> Int) -> Int

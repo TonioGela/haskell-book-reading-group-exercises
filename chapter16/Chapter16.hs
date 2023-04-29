@@ -371,10 +371,6 @@ newtype C a = C ((a -> Int) -> Int) -- si puo'
 runC :: C Int -> Int
 runC (C f) = f id
 
-instance Applicative C where
-    pure a = C $ \h -> h a
-    (C f) <*> (C g) = C $ \h -> f $ \a -> g $ h . a
-
 instance Functor C where
     fmap :: (a -> b) -> C a -> C b
     fmap f (C g) = C $ \h -> g $ h . f
