@@ -7,6 +7,7 @@ module Chapter16 () where
 
 import Test.QuickCheck
 import Control.Arrow ()
+import Data.Bifunctor
 
 
 functorIdentity :: (Functor f, Eq (f a)) => f a -> Bool
@@ -138,7 +139,7 @@ checkSum = do
 
 ---Write Functor instances for the following datatypes---
 
----1
+---1---
 data Quant a b = Finance | Desk a | Bloor b
 
 instance Functor (Quant a) where
@@ -146,7 +147,7 @@ instance Functor (Quant a) where
   fmap _ (Desk a) = Desk a
   fmap f (Bloor b) = Bloor . f $ b
 
----2
+---2---
 ---Chiedere a Paolino.
 data K a b = K a
   deriving (Show, Eq)
@@ -194,7 +195,7 @@ checkFlipK = do
   quickCheck (functorIdentity @(Flip K String) @String)
   quickCheck (functorCompose' @(Flip K String) @String @String @String)
 
----5
+---5---
 newtype LiftItOut f a = LiftItOut (f a)
   deriving (Show, Eq)
 
@@ -210,7 +211,7 @@ checkLiftOut = do
   quickCheck (functorIdentity @(LiftItOut []) @String)
   quickCheck (functorCompose' @(LiftItOut []) @String @Integer @Integer)
 
----6
+---6---
 data Parappa f g a = DaWrappa (f a) (g a)
   deriving (Show, Eq)
 
@@ -259,7 +260,7 @@ checkNotorious = do
                               @String
                               @String
                               @String)
----9
+---9---
 
 data List a = Nil | Cons a (List a)
   deriving (Show, Eq)
@@ -277,7 +278,7 @@ checkList = do
   quickCheck (functorIdentity @List @Integer)
   quickCheck (functorCompose' @List @String @String @String)
 
----10
+---10---
 
 data GoatLord a =
   NoGoat
@@ -302,7 +303,7 @@ checkGoat = do
   quickCheck (functorIdentity @GoatLord @Integer)
   quickCheck (functorCompose' @GoatLord @String @String @String)
 
----11
+---11---
 
 data TalkToMe a = Halt | Print String a | Read (String -> a)
 
@@ -332,8 +333,9 @@ functorCompose'' st x (Fun _ f) (Fun _ g) =
 checkTalkToMe :: IO ()
 checkTalkToMe = quickCheck (functorCompose'' @String @String @String)
 
-
-
+----------------------------------
+---Esercizi proposti da Paolino---
+----------------------------------
 
 data Tree a = Leaf | Node (Tree a) a (Tree a)
 
@@ -353,10 +355,8 @@ instance Functor TreeL where
 data Trie a = Trie [(a, Trie a)]
   deriving (Show, Eq)
 
-{-
 instance Functor Trie where
-    fmap f (Trie xs) = Trie $ fmap (f (***) fmap f) xs
--}
+    fmap f (Trie xs) = Trie $  map (bimap f (fmap f)) xs
 
 
 newtype F a = F (Int -> (a,a))
@@ -365,8 +365,7 @@ instance Functor F where
     fmap f (F g) = F $ \x -> let (a,b) = g x in (f a, f b)
 
 
-
-newtype C a = C ((a -> Int) -> Int) -- si puo'
+newtype C a = C ((a -> Int) -> Int) -- due volte controvariante -> covariante
 
 runC :: C Int -> Int
 runC (C f) = f id
@@ -375,14 +374,16 @@ instance Functor C where
     fmap :: (a -> b) -> C a -> C b
     fmap f (C g) = C $ \h -> g $ h . f
 
---- Dimostrazione che C è un funtore
+{-
+Dimostrazione che C è un funtore
 
---- fmap id (C g) = C $ \h -> g $ (h . id)
-            ---   = C $ \h -> g h
-            ---   = C g
+fmap id (C g) = C $ \h -> g $ (h . id)
+              = C $ \h -> g h
+              = C g
 
---- fmap f . fmap l (C g) = fmap f $ (C \h -> g $ (h . l))
- ---                      = C \h' -> \h -> g $ (h . l) $ h' . f  (definizione di $)
- ---                      = C \h -> g (h . f . l)
- ---                      = C \h -> g (h . (f . l))
- ---                      = fmap (f . l) (C g)
+fmap f . fmap l (C g) = fmap f $ (C $ \h -> g $ (h . l))
+                      = C $ \h' -> \h -> g $ (h . l) $ h' . f  (definizione di $)
+                      = C $ \h -> g (h . f . l)
+                      = C $ \h -> g (h . (f . l))
+                      = fmap (f . l) (C g)
+-}
