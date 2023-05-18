@@ -7,6 +7,7 @@ import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
 import Data.Bifunctor
 import Control.Monad
+
 ---------------
 ---Utilities---
 ---------------
@@ -45,6 +46,11 @@ trigger = undefined
 ---List Applicative---
 ----------------------
 
+newtype Constant a b = Constant { getConstant :: a }
+  deriving (Eq, Show)
+
+
+
 data List a = Nil | Cons a (List a)
   deriving (Eq, Show)
 
@@ -80,7 +86,7 @@ instance Functor ZipList' where
 ---con lunghezza maggiore di 1
 
 instance Applicative ZipList' where
-  pure = ZipList' . repeat'
+  pure = ZipList' . pure
   (<*>) (ZipList' fs) (ZipList' xs) = ZipList' $ zipWith' ($) fs xs
 
 instance Arbitrary a => Arbitrary (ZipList' a) where
@@ -130,6 +136,12 @@ checkSum = quickBatch $ applicative
 ----------------------------
 ---Validation Applicative---
 ----------------------------
+
+
+
+
+data Prova a b = Prova { geta :: a, getb :: b }
+  deriving (Eq, Show)
 
 data Validation e a = Failure' e | Success' a
   deriving (Eq, Show)
@@ -393,3 +405,6 @@ instance Applicative C where
   (<*>) (C ff) (C g) = C $ \h -> ff $ \f -> g $ h . f
 -- f :: a -> b è la variabile che assumo e di cui poi faccio il discard
 -- ff :: ((a -> b) -> Int) -> Int
+
+
+
