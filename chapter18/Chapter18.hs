@@ -10,8 +10,9 @@ import Data.Functor
 trigger :: m (a, b, c)
 trigger = undefined
 
-
+-----------------------
 ---Chapter Exercises---
+-----------------------
 
 ---1---
 
@@ -101,7 +102,7 @@ checkIdentity = quickBatch $ monad (trigger @Identity @String @String @String)
 data List a = Nil | Cons a (List a)
   deriving (Eq, Show)
 
----L'idea di Edoardo di scrivere applicative usando un'istanza di ---semigroup è molto bella
+---L'idea di Edoardo di scrivere applicative usando un'istanza di semigroup è molto bella
 
 instance Semigroup (List a) where
   (<>) Nil xs = xs
@@ -139,7 +140,7 @@ j =  (>>= id)
 ---Exercise 6---
 
 l1 :: Monad m => (a -> b) -> m a -> m b
-l1 f ma = f <$> ma
+l1 = (<$>)
 
 ---Exercise 7---
 
@@ -150,6 +151,7 @@ l2 f ma mb = ma >>= \x -> mb <&> f x
 
 a :: Monad m => m a -> m (a -> b) -> m b
 a ma = (>>= (<&>) ma)
+
 
 ---Exercise 9---
 
