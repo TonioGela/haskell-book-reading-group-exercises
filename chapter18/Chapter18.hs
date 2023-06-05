@@ -4,7 +4,7 @@ module Chapter18 () where
 import Test.QuickCheck
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
-
+import Data.Functor
 
 
 trigger :: m (a, b, c)
@@ -44,18 +44,18 @@ data PhhhbbtttEither b a = Left' a | Right' b
   deriving (Eq, Show)
 
 instance Functor (PhhhbbtttEither b) where
-  fmap f (Left' a) = Left' (f a)
+  fmap f (Left' x) = Left' (f x)
   fmap _ (Right' b) = Right' b
 
 instance Applicative (PhhhbbtttEither b) where
   pure = Left'
-  (<*>) (Left' f) (Left' a) = Left' (f a)
+  (<*>) (Left' f) (Left' x) = Left' (f x)
   (<*>) (Right' b) _ = Right' b
   (<*>) _ (Right' b) = Right' b
 
 instance Monad (PhhhbbtttEither b) where
   return = pure
-  (>>=) (Left' a) f = f a
+  (>>=) (Left' x) f = f x
   (>>=) (Right' b) _ = Right' b
 
 instance (Arbitrary a, Arbitrary b) => Arbitrary (PhhhbbtttEither b a) where
@@ -94,7 +94,7 @@ instance Eq a => EqProp (Identity a) where
   (=-=) = eq
 
 checkIdentity :: IO ()
-checkIdentity = quickBatch $ monad (trigger @(Identity) @String @String @String)
+checkIdentity = quickBatch $ monad (trigger @Identity @String @String @String)
 
 ---Exercise 4---
 
@@ -129,12 +129,12 @@ instance Eq a => EqProp (List a) where
   (=-=) = eq
 
 checkList :: IO ()
-checkList = quickBatch $ monad (trigger @(List) @String @String @String)
+checkList = quickBatch $ monad (trigger @List @String @String @String)
 
 ---Exercise 5---
 
 j :: Monad m => m (m a) -> m a
-j = (>>= id)
+j =  (>>= id)
 
 ---Exercise 6---
 
@@ -144,12 +144,12 @@ l1 f ma = f <$> ma
 ---Exercise 7---
 
 l2 :: Monad m => (a -> b -> c) -> m a -> m b -> m c
-l2 f ma mb = ma >>= \a -> mb >>= return . f a
+l2 f ma mb = ma >>= \x -> mb <&> f x
 
 ---Exercise 8---
 
 a :: Monad m => m a -> m (a -> b) -> m b
-a ma mf = mf >>= \f -> ma >>= \x -> return $ f x
+a ma = (>>= (<&>) ma)
 
 ---Exercise 9---
 
@@ -163,3 +163,5 @@ meh' f = foldr (l2 (:) . f) (pure [])
 
 flipType :: (Monad m) => [m a] -> m [a]
 flipType = flip meh id
+
+
