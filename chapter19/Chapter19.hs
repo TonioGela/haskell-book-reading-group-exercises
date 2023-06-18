@@ -76,33 +76,27 @@ router config = do
   get "/" $ saveUriHandler . redisConnection $ config
   get "/:short" $ getUriHandler . redisConnection $ config
 
-
 saveUriHandler :: R.Connection -> ActionM ()
 saveUriHandler rConn = do
   uri <- param "uri"
   let parsedUri :: Maybe URI
       parsedUri = parseURI (TL.unpack uri)
-  case parsedUri of
-    Just _ -> do
-      shawty <- liftIO shortyGen
-      let shorty = BC.pack shawty
-          uri' = encodeUtf8 (TL.toStrict uri)
-      resp <- liftIO (saveURI rConn shorty uri')
-      html (shortyCreated resp shawty)
-    Nothing -> text (shortyAintUri uri)
-
+  maybe (text . shortyAintUri $ uri) saveUri parsedUri
+  where saveUri :: URI -> ActionM ()
+        saveUri uri = do
+          shawty <- liftIO shortyGen
+          let shorty = BC.pack shawty
+              uri' = encodeUtf8 (TL.toStrict . TL.pack . show $ uri)
+          resp <- liftIO $ saveURI rConn shorty uri'
+          html $ shortyCreated resp shawty
 
 getUriHandler :: R.Connection -> ActionM ()
 getUriHandler rConn = do
   short <- param "short"
   uri <- liftIO (getURI rConn short)
   case uri of
-    Left reply -> text (TL.pack (show reply))
-    Right mbBS -> case mbBS of
-      Nothing -> text "uri not found"
-      Just bs -> html (shortyFound tbs)
-        where tbs :: TL.Text
-              tbs = TL.fromStrict (decodeUtf8 bs)
+    Left reply -> text . TL.pack . show $ reply
+    Right mbBS -> html . shortyFound $ maybe "uri not found" (TL.fromStrict . decodeUtf8) mbBS
 
 main :: IO ()
 main = do
