@@ -12,6 +12,20 @@ dependencies:
   - containers
   - nonempty-containers
   - checkers
+  - trifecta
+  - parsers
+  - raw-strings-qq
+  - attoparsec
+  - aeson
+  - bytestring
+  - hedis
+  - network-uri
+  - random
+  - scotty
+  - semigroups
+  - text
+
+  
 
 data-dir: data
 
@@ -35,3 +49,5 @@ library:
     - chapter15
     - chapter16
     - chapter17
+    - chapter18
+    - chapter19
