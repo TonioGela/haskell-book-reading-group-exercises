@@ -17,6 +17,9 @@ library
       Chapter15
       Chapter16
       Chapter17
+      Chapter18
+      Chapter19
+      Chapter20
   other-modules:
       Paths_Emraors
   hs-source-dirs:
@@ -26,16 +29,30 @@ library
       chapter15
       chapter16
       chapter17
+      chapter18
+      chapter19
+      chapter20
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-unused-top-binds
   build-depends:
       QuickCheck
+    , aeson
+    , attoparsec
     , base >=4.7 && <5
+    , bytestring
     , checkers
     , containers
+    , hedis
     , hspec
     , mtl
+    , network-uri
     , nonempty-containers
-    , random >=1.2.1.1
+    , parsers
+    , random
+    , raw-strings-qq
+    , scotty
+    , semigroups
     , split
+    , text
     , transformers
+    , trifecta
   default-language: Haskell2010
