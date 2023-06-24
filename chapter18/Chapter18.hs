@@ -152,7 +152,6 @@ l2 f ma mb = ma >>= \x -> mb <&> f x
 a :: Monad m => m a -> m (a -> b) -> m b
 a ma = (>>= (<&>) ma)
 
-
 ---Exercise 9---
 
 meh :: Monad m => [a] -> (a -> m b) -> m [b]
