@@ -19,16 +19,18 @@ elem' :: (Foldable t, Eq a) => a -> t a -> Bool
 elem' x = getAny . foldMap (Any . (== x))
 
 minimum' :: (Foldable t, Ord a) => t a -> Maybe a
-minimum' = foldr (min . Just) Nothing
+minimum' = foldr minMaybe Nothing
+  where minMaybe a = Just . maybe a (min a)
 
 maximum' :: (Foldable t, Ord a) => t a -> Maybe a
-maximum' = foldr (max . Just) Nothing
+maximum' = foldr maxMaybe Nothing
+  where maxMaybe a = Just . maybe a (max a)
 
 null' :: (Foldable t) => t a -> Bool
-null' = foldr (const (const True)) False
+null' = not . getAny . foldMap (const $ Any True)
 
 length' :: (Foldable t) => t a -> Int
-length' = foldr (const (+1)) 0
+length' = getSum . foldMap (const $ Sum 1)
 
 toList' :: (Foldable t) => t a -> [a]
 toList' = foldMap (:[])
