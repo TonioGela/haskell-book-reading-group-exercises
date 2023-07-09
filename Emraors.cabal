@@ -20,6 +20,10 @@ library
       Chapter18
       Chapter19
       Chapter20
+      Chapter21
+      Chapter22
+      Chapter23
+      Chapter24
   other-modules:
       Paths_Emraors
   hs-source-dirs:
@@ -32,6 +36,10 @@ library
       chapter18
       chapter19
       chapter20
+      chapter21
+      chapter22
+      chapter23
+      chapter24
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-unused-top-binds
   build-depends:
       QuickCheck

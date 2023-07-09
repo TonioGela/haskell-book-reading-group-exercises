@@ -17,3 +17,24 @@ cradle:
 
     - path: "chapter17"
       component: "lib:Emraors"
+
+    - path: "chapter18"
+      component: "lib:Emraors"
+
+    - path: "chapter19"
+      component: "lib:Emraors"
+
+    - path: "chapter20"
+      component: "lib:Emraors"
+
+    - path: "chapter21"
+      component: "lib:Emraors"
+
+    - path: "chapter22"
+      component: "lib:Emraors"
+
+    - path: "chapter23"
+      component: "lib:Emraors"
+
+    - path: "chapter24"
+      component: "lib:Emraors"
