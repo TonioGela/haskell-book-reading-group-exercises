@@ -11,9 +11,14 @@ import Test.QuickCheck.Classes (traversable)
 trigger :: t (f a, g b, c, m)
 trigger = undefined
 
----Chapter Exercises---
+--------------------------------------------------------------------------------
+---Chapter Exercises------------------------------------------------------------
+--------------------------------------------------------------------------------
 
----Identity---
+--------------------------------------------------------------------------------
+---Identity---------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 
 newtype Identity a = Identity a
   deriving (Eq, Ord, Show)
@@ -41,7 +46,9 @@ checkIdentity :: IO ()
 checkIdentity = quickBatch $ traversable
   (trigger @Identity @[] @String @[] @String @String @String)
 
----Constant---
+--------------------------------------------------------------------------------
+---Constant---------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 newtype Constant a b = Constant {getConstant :: a}
   deriving (Eq, Ord, Show)
@@ -65,9 +72,9 @@ checkConstant :: IO ()
 checkConstant = quickBatch $ traversable
   (trigger @(Constant String) @[] @String @[] @String @String @String)
 
---------------
----Optional---
--------  
+--------------------------------------------------------------------------------
+---Optional---------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 data Optional a = Nada | Yep a
   deriving (Eq, Ord, Show)
@@ -101,7 +108,10 @@ checkOptional :: IO ()
 checkOptional = quickBatch $ traversable
   (trigger @Optional  @[] @String @[] @String @String @String)
 
----List---
+--------------------------------------------------------------------------------
+---List-------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
 
 data List a = Nil | Cons a (List a)
   deriving (Eq, Ord, Show)
@@ -138,7 +148,9 @@ checkList :: IO ()
 checkList = quickBatch $ traversable
   (trigger @List @[] @String @[] @String @String @String)
 
----Three---
+--------------------------------------------------------------------------------
+---Three------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 data Three a b c = Three a b c
   deriving (Eq, Ord, Show)
@@ -163,7 +175,9 @@ checkThree :: IO ()
 checkThree = quickBatch $ traversable
   (trigger @(Three String String) @[] @String @[] @String @String @String)
 
----Pair---
+--------------------------------------------------------------------------------
+---Pair-------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 data Pair a b = Pair a b
   deriving (Eq, Ord, Show)
@@ -187,7 +201,9 @@ checkPair :: IO ()
 checkPair = quickBatch $ traversable
   (trigger @(Pair String) @[] @String @[] @String @String @String)
 
----Big---
+--------------------------------------------------------------------------------
+---Big--------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 data Big a b = Big a b b
   deriving (Eq, Ord, Show)
@@ -211,7 +227,9 @@ checkBig :: IO ()
 checkBig = quickBatch $ traversable
   (trigger @(Big String) @[] @String @[] @String @String @String)
 
----Bigger---
+--------------------------------------------------------------------------------
+---Bigger-----------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 data Bigger a b = Bigger a b b b
   deriving (Eq, Ord, Show)
@@ -235,8 +253,9 @@ checkBigger :: IO ()
 checkBigger = quickBatch $ traversable
   (trigger @(Bigger String) @[] @String @[] @String @String @String)
 
-
-
+--------------------------------------------------------------------------------
+---Other Exercises---------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 data S n a = S (n a) a
   deriving (Eq, Show)
@@ -260,6 +279,9 @@ instance (Arbitrary a, Arbitrary (n a)) => Arbitrary (S n a) where
 instance (Eq a, Eq (n a)) => EqProp (S n a) where
   (=-=) = eq
 
+--------------------------------------------------------------------------------
+---Tree-------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 data Tree a = Empty
             | Leaf a
