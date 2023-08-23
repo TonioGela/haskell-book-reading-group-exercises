@@ -21,7 +21,8 @@ executable haskell-book-reading-group-exercises
                         hspec,
                         QuickCheck,
                         containers,
-                        nonempty-containers
+                        nonempty-containers,
+                        checkers
   ghc-options:         -Wall
                        -Wcompat
                        -Widentities
