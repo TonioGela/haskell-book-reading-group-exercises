@@ -22,3 +22,10 @@ instance Applicative (Reader r) where
   (<*>) (Reader rab) (Reader ra) = Reader (\r -> (rab r) $ (ra r))
   pure a = Reader (\r -> a)
 
+instance Monad (Reader r) where
+  -- (>>=) :: m a     -> (a -> m b)     -> m b
+  -- (>>=) :: r -> a  -> (a -> r -> b)  -> r -> b
+  (>>=) (Reader ra) f = Reader $ \r ->
+    let (Reader rb) = f (ra r)
+    in rb r
+

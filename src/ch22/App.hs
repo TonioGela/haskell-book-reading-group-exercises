@@ -37,7 +37,7 @@ data Dog = Dog {
   , dogsAddress :: Address
 } deriving (Eq, Show)
 
--- withot Reader
+-- without Reader
 getDog :: Person -> Dog
 getDog p = Dog (dogName p) (address p)
 
@@ -48,3 +48,14 @@ getDogR = Dog <$> dogName <*> address
 -- with Reader and lift
 getDogR' :: Person -> Dog
 getDogR' = liftA2 Dog dogName address
+
+getDogRM :: Person -> Dog
+getDogRM = do
+  name <- dogName
+  addy <- address
+  return $ Dog name addy
+
+-- (>>=) :: m a     -> (a -> m b)     -> m b
+-- (>>=) :: r -> a  -> (a -> r -> b)  -> r -> b
+getDogRM' :: Person -> Dog
+getDogRM' = dogName >>= (\dn p -> Dog dn (address p))
