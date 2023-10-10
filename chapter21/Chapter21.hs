@@ -1,9 +1,17 @@
+{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
+
 module Chapter21 () where
 
+import Data.String (IsString)
 import Test.QuickCheck (Arbitrary (arbitrary), frequency)
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes (traversable)
@@ -18,7 +26,6 @@ trigger = undefined
 --------------------------------------------------------------------------------
 ---Identity---------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
 
 newtype Identity a = Identity a
   deriving (Eq, Ord, Show)
@@ -43,8 +50,10 @@ instance Eq a => EqProp (Identity a) where
   (=-=) = eq
 
 checkIdentity :: IO ()
-checkIdentity = quickBatch $ traversable
-  (trigger @Identity @[] @String @[] @String @String @String)
+checkIdentity =
+  quickBatch $
+    traversable
+      (trigger @Identity @[] @String @[] @String @String @String)
 
 --------------------------------------------------------------------------------
 ---Constant---------------------------------------------------------------------
@@ -69,8 +78,10 @@ instance Eq a => EqProp (Constant a b) where
   (=-=) = eq
 
 checkConstant :: IO ()
-checkConstant = quickBatch $ traversable
-  (trigger @(Constant String) @[] @String @[] @String @String @String)
+checkConstant =
+  quickBatch $
+    traversable
+      (trigger @(Constant String) @[] @String @[] @String @String @String)
 
 --------------------------------------------------------------------------------
 ---Optional---------------------------------------------------------------------
@@ -89,7 +100,6 @@ instance Applicative Optional where
   _ <*> Nada = Nada
   Yep f <*> Yep a = Yep (f a)
 
-
 instance Foldable Optional where
   foldr _ b Nada = b
   foldr f b (Yep a) = f a b
@@ -105,13 +115,14 @@ instance Eq a => EqProp (Optional a) where
   (=-=) = eq
 
 checkOptional :: IO ()
-checkOptional = quickBatch $ traversable
-  (trigger @Optional  @[] @String @[] @String @String @String)
+checkOptional =
+  quickBatch $
+    traversable
+      (trigger @Optional @[] @String @[] @String @String @String)
 
 --------------------------------------------------------------------------------
 ---List-------------------------------------------------------------------------
 --------------------------------------------------------------------------------
-
 
 data List a = Nil | Cons a (List a)
   deriving (Eq, Ord, Show)
@@ -138,15 +149,20 @@ instance Traversable List where
   traverse f (Cons x xs) = Cons <$> f x <*> traverse f xs
 
 instance Arbitrary a => Arbitrary (List a) where
-  arbitrary = frequency [(1, return Nil)
-                        ,(3, Cons <$> arbitrary <*> arbitrary)]
+  arbitrary =
+    frequency
+      [ (1, return Nil),
+        (3, Cons <$> arbitrary <*> arbitrary)
+      ]
 
 instance Eq a => EqProp (List a) where
   (=-=) = eq
 
 checkList :: IO ()
-checkList = quickBatch $ traversable
-  (trigger @List @[] @String @[] @String @String @String)
+checkList =
+  quickBatch $
+    traversable
+      (trigger @List @[] @String @[] @String @String @String)
 
 --------------------------------------------------------------------------------
 ---Three------------------------------------------------------------------------
@@ -164,16 +180,20 @@ instance Foldable (Three a b) where
 instance Traversable (Three a b) where
   traverse f (Three a b c) = Three a b <$> f c
 
-instance (Arbitrary a, Arbitrary b, Arbitrary c)
-  => Arbitrary (Three a b c) where
+instance
+  (Arbitrary a, Arbitrary b, Arbitrary c) =>
+  Arbitrary (Three a b c)
+  where
   arbitrary = Three <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance (Eq a, Eq b, Eq c) => EqProp (Three a b c) where
   (=-=) = eq
 
 checkThree :: IO ()
-checkThree = quickBatch $ traversable
-  (trigger @(Three String String) @[] @String @[] @String @String @String)
+checkThree =
+  quickBatch $
+    traversable
+      (trigger @(Three String String) @[] @String @[] @String @String @String)
 
 --------------------------------------------------------------------------------
 ---Pair-------------------------------------------------------------------------
@@ -198,8 +218,10 @@ instance (Eq a, Eq b) => EqProp (Pair a b) where
   (=-=) = eq
 
 checkPair :: IO ()
-checkPair = quickBatch $ traversable
-  (trigger @(Pair String) @[] @String @[] @String @String @String)
+checkPair =
+  quickBatch $
+    traversable
+      (trigger @(Pair String) @[] @String @[] @String @String @String)
 
 --------------------------------------------------------------------------------
 ---Big--------------------------------------------------------------------------
@@ -224,8 +246,10 @@ instance (Eq a, Eq b) => EqProp (Big a b) where
   (=-=) = eq
 
 checkBig :: IO ()
-checkBig = quickBatch $ traversable
-  (trigger @(Big String) @[] @String @[] @String @String @String)
+checkBig =
+  quickBatch $
+    traversable
+      (trigger @(Big String) @[] @String @[] @String @String @String)
 
 --------------------------------------------------------------------------------
 ---Bigger-----------------------------------------------------------------------
@@ -250,8 +274,10 @@ instance (Eq a, Eq b) => EqProp (Bigger a b) where
   (=-=) = eq
 
 checkBigger :: IO ()
-checkBigger = quickBatch $ traversable
-  (trigger @(Bigger String) @[] @String @[] @String @String @String)
+checkBigger =
+  quickBatch $
+    traversable
+      (trigger @(Bigger String) @[] @String @[] @String @String @String)
 
 --------------------------------------------------------------------------------
 ---Other Exercises---------------------------------------------------------------
@@ -283,9 +309,10 @@ instance (Eq a, Eq (n a)) => EqProp (S n a) where
 ---Tree-------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-data Tree a = Empty
-            | Leaf a
-            | Node (Tree a) a (Tree a)
+data Tree a
+  = Empty
+  | Leaf a
+  | Node (Tree a) a (Tree a)
   deriving (Eq, Show)
 
 instance Functor Tree where
@@ -304,13 +331,127 @@ instance Traversable Tree where
   traverse f (Node l a r) = Node <$> traverse f l <*> f a <*> traverse f r
 
 instance Arbitrary a => Arbitrary (Tree a) where
-  arbitrary = frequency [(1, return Empty)
-                        ,(1, Leaf <$> arbitrary)
-                        ,(2, Node <$> arbitrary <*> arbitrary <*> arbitrary)]
+  arbitrary =
+    frequency
+      [ (1, return Empty),
+        (1, Leaf <$> arbitrary),
+        (2, Node <$> arbitrary <*> arbitrary <*> arbitrary)
+      ]
 
 instance Eq a => EqProp (Tree a) where
   (=-=) = eq
 
 checkTree :: IO ()
-checkTree = quickBatch $ traversable
-  (trigger @Tree @[] @String @[] @String @String @String)
+checkTree =
+  quickBatch $
+    traversable
+      (trigger @Tree @[] @String @[] @String @String @String)
+
+{-
+data Phantom m b = Phantom {unPhantom :: m}
+
+instance Functor (Phantom m) where
+    fmap _ (Phantom m) = Phantom m
+
+instance Monoid m => Applicative (Phantom m) where
+    pure _ = Phantom mempty
+    Phantom m' <*> Phantom m = Phantom (m' <> m)
+
+foldMap1 :: Monoid m => (a -> m) -> t a -> m
+foldMap1 f = unPhantom . traverse (Phantom <$> f)
+-}
+
+--------------------------------------------------------------------------------
+---Paolino's Homework-----------------------------------------------------------
+--------------------------------------------------------------------------------
+
+newtype OptionName = OptionName String
+  deriving (Show, Eq, Ord, IsString)
+
+newtype OptionValue = OptionValue {optionValue :: String}
+  deriving (Show, Eq, IsString)
+
+data Parser a
+  = Pure a
+  | forall b.
+    Option
+      { name :: OptionName,
+        patch :: OptionValue -> Maybe (b -> a),
+        rest :: Parser b
+      }
+
+-- example: clean --input foo --output bar --verbose true
+-- example: clean --input foo --verbose false --output bar
+data Clean = Clean
+  { input :: String,
+    output :: String,
+    verbose :: Bool
+  }
+  deriving (Show, Eq)
+
+test1 :: Bool
+test1 =
+  interpret
+    parseClean
+    [ ("--input", "foo"),
+      ("--output", "bar"),
+      ("--verbose", "true")
+    ]
+    == Just (Clean "foo" "bar" True)
+
+test2 :: Bool
+test2 =
+  interpret
+    parseClean
+    [ ("--input", "foo"),
+      ("--verbose", "false"),
+      ("--output", "bar")
+    ]
+    == Just (Clean "foo" "bar" False)
+
+type Args = [(OptionName, OptionValue)]
+
+interpret :: Parser a -> Args -> Maybe a
+interpret (Pure x) _xs = Just x
+interpret Option {..} xs = do
+  case lookup name xs of
+    Nothing -> Nothing -- option name not found
+    Just x -> do
+      -- option name found
+      f <- patch x
+      x' <- interpret rest xs
+      return $ f x'
+
+parseClean :: Parser Clean
+parseClean = Clean <$> parseInput <*> parseOutput <*> parseVerbose
+
+mkOption :: OptionName -> (OptionValue -> Maybe b) -> Parser b
+mkOption name patch = Option name (fmap (fmap const) patch) $ Pure ()
+
+parseInput :: Parser String
+parseInput = mkOption "--input" $ Just . optionValue
+
+parseOutput :: Parser String
+parseOutput = mkOption "--output" $ Just . optionValue
+
+parseVerbose :: Parser Bool
+parseVerbose = mkOption "--verbose" $ \case
+  "true" -> Just True
+  "false" -> Just False
+  _ -> Nothing
+
+instance Functor Parser where
+  fmap :: (a -> b) -> Parser a -> Parser b
+  fmap f (Pure a) = Pure . f $ a
+  fmap f Option {..} = Option name (fmap (fmap (f .)) patch) rest
+
+-- l'fmap più interno è quello di Maybe, quello più esterno è quello del hom covariante, come anche il f .
+
+instance Applicative Parser where
+  pure :: a -> Parser a
+  pure = Pure
+  (<*>) :: Parser (b -> a) -> Parser b -> Parser a
+  (<*>) (Pure f) pb = fmap f pb
+  (<*>) Option {..} pb =
+    Option name (fmap (fmap uncurry) patch) $ (,) <$> rest <*> pb
+
