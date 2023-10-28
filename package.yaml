@@ -24,7 +24,7 @@ dependencies:
   - scotty
   - semigroups
   - text
-
+  - tree-diff
   
 
 data-dir: data

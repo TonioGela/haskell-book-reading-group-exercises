@@ -1,4 +1,7 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
+
+
+
 module Chapter22 () where
 
 newtype Reader r a = Reader { runReader :: r -> a }

@@ -2,7 +2,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 module Chapter24 () where 
 
-
 import Control.Applicative
 import Text.Trifecta
 
