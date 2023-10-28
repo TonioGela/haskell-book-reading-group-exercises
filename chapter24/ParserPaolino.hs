@@ -8,7 +8,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 {-# OPTIONS_GHC -Wno-unused-matches #-}
 
-module ParserPaolino where
+module ParserPaolino () where
 
 import Control.Applicative
     ( Alternative (..)
@@ -39,11 +39,16 @@ instance Applicative (Parser s) where
     pure :: a -> Parser s a
     pure x = Parser $ \s -> Just . (, x) $ s
     (<*>) :: Parser s (a -> b) -> Parser s a -> Parser s b
-    Parser p1 <*> Parser p2 = error "TODO"
+    Parser p1 <*> Parser p2 = Parser $ \s -> do
+      (s', f) <- p1 s
+      (s'', a) <- p2 s'
+      return (s'', f a)
 
 instance Monad (Parser s) where
     (>>=) :: Parser s a -> (a -> Parser s b) -> Parser s b
-    Parser p >>= f = error "TODO"
+    Parser p >>= f = Parser $ \s -> do
+      (s', a) <- p s
+      runParser (f a) s'
 
 instance Alternative (Parser s) where
     empty :: Parser s a
