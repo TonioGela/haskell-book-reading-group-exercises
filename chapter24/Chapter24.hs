@@ -143,40 +143,13 @@ testSemVerP = do
 parseDigit :: Parser Char
 parseDigit = oneOf ['0' .. '9']
 
-base10Integer :: Parser Integer
-base10Integer = read <$> some parseDigit
+naturalNumber :: Parser Integer
+naturalNumber = read <$> some parseDigit
 
+integerNumber :: Parser Integer
+integerNumber = (char '-') >> negate <$> base10Integer <|> base10Integer
 
-base10Integer' :: Parser Integer
-base10Integer' = (char '-') >> negate <$> base10Integer <|> base10Integer
-
-{- Define the PhoneNumber type
-data PhoneNumber = PhoneNumber Integer Integer Integer
-    deriving (Eq, Show)
-
--- Parse an integer of a certain length, assuming it's all digits
-parseFixedInt :: Int -> Parser Integer
-parseFixedInt digitCount = read <$> count digitCount digit
-
--- Parse the area code, which could be in different formats
-parseAreaCode :: Parser Integer
-parseAreaCode =  (parens (parseFixedInt 3)) <|> parseFixedInt 3
-
--- Parser for the optional '1-' prefix
-parseOnePrefix :: Parser (Maybe Char)
-parseOnePrefix = optional $ try (char '1' >> char '-' >> return '1')
-
--- Main phone number parser function
-parsePhone :: Parser PhoneNumber
-parsePhone = do
-    _ <- parseOnePrefix
-    areaCode <- parseAreaCode
-    optional (char '-')
-    firstThree <- parseFixedInt 3
-    optional (char '-' <|> char ' ')
-    lastFour <- parseFixedInt 4
-    return (PhoneNumber areaCode firstThree lastFour)
--}
+-- I numeri italiani hanno il prefisso seguito dal numero vero e proprio
 
 type Prefix = Integer
 
