@@ -25,6 +25,7 @@ library
       Chapter23
       Chapter24
       ParserPaolino
+      ParserWithFailures
       Type
       Value
   other-modules:
@@ -54,6 +55,7 @@ library
     , containers
     , hedis
     , hspec
+    , lens >=4.0
     , mtl
     , network-uri
     , nonempty-containers
