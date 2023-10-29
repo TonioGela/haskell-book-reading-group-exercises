@@ -170,7 +170,7 @@ word :: ParserS String
 word = some $ satisfy (`elem` (['a' .. 'z'] :: String))
 
 -- parse a natural number
-natural :: ParserS Integer
+natural :: ParserS Int
 natural = read <$> some (satisfy isDigit)
 
 -- parse an haskell-style list of values, use between and sepBy
@@ -185,15 +185,17 @@ testList = runParser (list word) "[ a, b,c,d ]" == Just ("",["a","b","c","d"])
 
 --Additional exercices
 
+
 --Ho modificato VInt perché natural non era compatibile con Int
 -- a value is either an integer, a string, a list of values or a record
-data Value = VInt Integer | VString String | VList [Value] | VRecord Record
+data Value = VInt Int | VString String | VList [Value] | VRecord Record
     deriving (Show, Eq, ToExpr, Generic)
 
 -- a record is a map of values indexed by strings
 newtype Record = Record (Map String Value)
     deriving (Show, Eq, Generic)
     deriving anyclass (ToExpr)
+
 
 createRecord :: [(String, Value)] -> Record
 createRecord entries = Record (Map.fromList entries)
@@ -220,6 +222,15 @@ keyValueP =
   valueP <* skipSpaces >>= \value ->
   pure (key, value)
 
+testRecordP :: Bool
+testRecordP =  runParser recordP "{first: 3, second: 4, third: ciao}"
+                  == Just ("",createRecord
+                            [("first",VInt 3)
+                            ,("second",VInt 4)
+                            ,("third",VString "ciao")])
 
 testKeyValueP :: Bool
 testKeyValueP = runParser keyValueP "key: 2" == Just ("",("key",VInt 2))
+
+
+
