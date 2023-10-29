@@ -23,6 +23,7 @@ import Data.Map (Map)
 import qualified Data.Map.Lazy as Map
 import Value (Record, Value)
 import Data.Bifunctor (bimap, Bifunctor (bimap))
+import Data.Char
 
 -- | A parser is a function that may reduce the input and return a value in place
 -- of the consumed input.
@@ -50,19 +51,20 @@ instance Monad (Parser s) where
       (s', a) <- p s
       runParser (f a) s'
 
+-- Use alternative for Maybe
 instance Alternative (Parser s) where
     empty :: Parser s a
-    empty = error "TODO"
+    empty = Parser $ \s -> Nothing
     (<|>) :: Parser s a -> Parser s a -> Parser s a
-    Parser p1 <|> Parser p2 = error "TODO"
+    Parser p1 <|> Parser p2 = Parser $ \s -> p1 s <|> p2 s
 
 instance (Semigroup a) => Semigroup (Parser s a) where
     (<>) :: Parser s a -> Parser s a -> Parser s a
-    (<>) = error "TODO"
+    (<>) p1 p2 = (<>) <$> p1 <*> p2
 
 instance (Monoid a) => Monoid (Parser s a) where
     mempty :: Parser s a
-    mempty = error "TODO"
+    mempty = pure mempty
 
 instance MonadFail (Parser s) where
     fail :: String -> Parser s a
@@ -77,51 +79,92 @@ instance MonadPlus (Parser s) where
 
 -- take next token from input
 consume :: Parser [a] a
-consume = error "TODO"
+consume = Parser $ \case
+    [] -> Nothing
+    (x : xs) -> Just (xs, x)
 
 -- observe next token from input without consuming it
 peek :: Parser [a] a
-peek = error "TODO"
+peek = Parser $ \case
+    [] -> Nothing
+    (x : xs) -> Just (x : xs, x)
 
 -- match end of input
 eof :: Parser [a] ()
-eof = error "TODO"
+eof = Parser $ \case
+    [] -> Just ([], ())
+    _ -> Nothing
 
 -- match next token of input if it satisfies the predicate
 satisfy :: (a -> Bool) -> Parser [a] a
-satisfy f = error "TODO"
+satisfy p = do
+  a <- consume
+  if p a then pure a else empty
 
 -- match next token of input if it is equal to the given token
 char :: Eq a => a -> Parser [a] a
-char c = error "TODO"
+char c = satisfy (== c)
+
+comma :: Parser [Char] Char
+comma = char ','
+
+testCommaInvalidInput :: Bool
+testCommaInvalidInput = runParser comma "1" == Nothing
+
+testCommaValidInput :: Bool
+testCommaValidInput = runParser comma "," == Just ("", ',')
 
 -- match a string of tokens
 string :: Eq a => [a] -> Parser [a] [a]
-string = error "TODO"
+string = foldr (liftA2 (:) . char) (pure [])
+
+testString :: Bool
+testString = runParser (string "as") "asd" == Just ("d", "as")
 
 -- parse a list of values separated by a given separator
+-- taken from: https://hackage.haskell.org/package/attoparsec-0.14.4/docs/src/Data.Attoparsec.Combinator.html#local-6989586621679068158
+
 sepBy :: Parser s a -> Parser s b -> Parser s [a]
-sepBy p sep = error "TODO"
+sepBy p sep = scan
+    where scan = liftA2 (:) p ((sep *> scan) <|> pure [])
+
+testSepBy :: Bool
+testSepBy = runParser (sepBy (string "asd") comma) "asd,asd"
+                                  == Just ("",["asd","asd"])
 
 -- parse a value enclosed by two ignored parsers
 between :: Parser s a -> Parser s b -> Parser s c -> Parser s c
-between open close p = error "TODO"
+between open close p = open *> p <* close
+
+betweenTest :: Bool
+betweenTest = runParser (between
+                         (char '[')
+                         (char ']')
+                         (string "as")) "[as]"
+              == Just ("","as")
 
 -- parse a value or use a default value if the parser fails
 option :: a -> Parser s a -> Parser s a
-option x p = error "TODO"
+option x p = p <|> pure x
+
+testOption :: Bool
+testOption = runParser (option '.' comma) "asd" == Just ("asd", '.')
 
 -- parse and skip zero or more space characters
 skipSpaces :: ParserS ()
-skipSpaces = error "TODO"
+skipSpaces = scan $> ()
+  where scan = (char ' ' *> scan) <|> pure []
+
+testSkipSpaces :: Bool
+testSkipSpaces = runParser skipSpaces "   ," == Just (",",())
 
 -- parse a word as a on-empty string of lowercase letters
 word :: ParserS String
-word = error "TODO"
+word = some $ satisfy (`elem` (['a' .. 'z'] :: String))
 
 -- parse a natural number
-natural :: ParserS Int
-natural = error "TODO"
+natural :: ParserS Integer
+natural = read <$> many (satisfy isDigit)
 
 -- parse an haskell-style list of values, use between and sepBy
 list :: ParserS a -> ParserS [a]
