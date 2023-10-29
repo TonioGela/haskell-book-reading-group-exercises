@@ -61,7 +61,7 @@ instance Monad (Parser s) where
 -- Use alternative for Maybe
 instance Alternative (Parser s) where
     empty :: Parser s a
-    empty = Parser $ \s -> Nothing
+    empty = Parser $ const Nothing
     (<|>) :: Parser s a -> Parser s a -> Parser s a
     Parser p1 <|> Parser p2 = Parser $ \s -> p1 s <|> p2 s
 
@@ -171,7 +171,7 @@ word = some $ satisfy (`elem` (['a' .. 'z'] :: String))
 
 -- parse a natural number
 natural :: ParserS Integer
-natural = read <$> many (satisfy isDigit)
+natural = read <$> some (satisfy isDigit)
 
 -- parse an haskell-style list of values, use between and sepBy
 list :: ParserS a -> ParserS [a]
@@ -182,7 +182,6 @@ list p = between open closed middle
 
 testList :: Bool
 testList = runParser (list word) "[ a, b,c,d ]" == Just ("",["a","b","c","d"])
-
 
 --Additional exercices
 
@@ -196,6 +195,8 @@ newtype Record = Record (Map String Value)
     deriving (Show, Eq, Generic)
     deriving anyclass (ToExpr)
 
+createRecord :: [(String, Value)] -> Record
+createRecord entries = Record (Map.fromList entries)
 
 -- parse a value, use '<|>' to try different parsers
 valueP :: ParserS Value
@@ -204,11 +205,21 @@ valueP = VInt <$> natural
      <|> VList <$> list valueP
      <|> VRecord <$> recordP
 
---newtype Record = Record (Map String Value)
 -- parse a record
 recordP :: ParserS Record
-recordP = undefined
+recordP = createRecord <$> between open closed  middle
+  where open =  char '{' *> skipSpaces
+        closed =  char '}' *> skipSpaces
+        middle = sepBy keyValueP (between skipSpaces skipSpaces comma)
 
--- parse a key-value pair
+-- parse a key-value pair key: value
 keyValueP :: ParserS (String, Value)
-keyValueP = error "TODO"
+keyValueP =
+  word <* skipSpaces >>= \key ->
+  char ':' >> skipSpaces >>
+  valueP <* skipSpaces >>= \value ->
+  pure (key, value)
+
+
+testKeyValueP :: Bool
+testKeyValueP = runParser keyValueP "key: 2" == Just ("",("key",VInt 2))
