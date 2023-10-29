@@ -7,6 +7,10 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 {-# OPTIONS_GHC -Wno-unused-matches #-}
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies#-}
+
+
 
 module ParserPaolino () where
 
@@ -21,9 +25,12 @@ import Control.Monad (MonadPlus (..))
 import Data.Functor (($>))
 import Data.Map (Map)
 import qualified Data.Map.Lazy as Map
-import Value (Record, Value)
 import Data.Bifunctor (bimap, Bifunctor (bimap))
 import Data.Char
+import GHC.Base (undefined)
+import Data.Bool (Bool)
+import Data.TreeDiff.Class (ToExpr)
+import GHC.Generics (Generic)
 
 -- | A parser is a function that may reduce the input and return a value in place
 -- of the consumed input.
@@ -168,15 +175,39 @@ natural = read <$> many (satisfy isDigit)
 
 -- parse an haskell-style list of values, use between and sepBy
 list :: ParserS a -> ParserS [a]
-list p = error "TODO"
+list p = between open closed middle
+  where open = char '[' *> skipSpaces
+        middle = sepBy p (between skipSpaces skipSpaces comma)
+        closed = skipSpaces <* char ']'
+
+testList :: Bool
+testList = runParser (list word) "[ a, b,c,d ]" == Just ("",["a","b","c","d"])
+
+
+--Additional exercices
+
+--Ho modificato VInt perché natural non era compatibile con Int
+-- a value is either an integer, a string, a list of values or a record
+data Value = VInt Integer | VString String | VList [Value] | VRecord Record
+    deriving (Show, Eq, ToExpr, Generic)
+
+-- a record is a map of values indexed by strings
+newtype Record = Record (Map String Value)
+    deriving (Show, Eq, Generic)
+    deriving anyclass (ToExpr)
+
 
 -- parse a value, use '<|>' to try different parsers
 valueP :: ParserS Value
-valueP = error "TODO"
+valueP = VInt <$> natural
+     <|> VString <$> word
+     <|> VList <$> list valueP
+     <|> VRecord <$> recordP
 
+--newtype Record = Record (Map String Value)
 -- parse a record
 recordP :: ParserS Record
-recordP = error "TODO"
+recordP = undefined
 
 -- parse a key-value pair
 keyValueP :: ParserS (String, Value)
