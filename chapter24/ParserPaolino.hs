@@ -9,6 +9,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 {-# OPTIONS_GHC -Wno-unused-matches #-}
+{-# LANGUAGE TupleSections #-}
 
 module ParserPaolino () where
 
@@ -28,6 +29,8 @@ import qualified Data.Map.Lazy as Map
 import Data.TreeDiff.Class (ToExpr)
 import GHC.Base (undefined)
 import GHC.Generics (Generic)
+import Database.Redis (Reply(Integer))
+import Text.Trifecta (HasErr(err))
 
 -- | A parser is a function that may reduce the input and return a value in place
 -- of the consumed input.
@@ -298,7 +301,7 @@ operation Div = div
 data Token
   = OpenParens
   | ClosedParens
-  | Number Integer
+  | Number Int
   | Operator Operator
   | Space -- discuss why Space is good to have
   deriving (Show, Eq)
@@ -324,7 +327,7 @@ tokenize = foldr f []
       | isDigit c = case tokens of
           (Number n : ts) -> Number (read [c] * 10 ^ length (show n) + n) : ts
           _ -> Number (read [c]) : tokens
-      | otherwise = tokens
+      | otherwise = error "not an expression"
 
 cleanSpaces :: [Token] -> [Token]
 cleanSpaces = filter (/= Space)
@@ -383,10 +386,96 @@ evaluate (Operation e1 ((op1, e2) : (op2, e3) : exprs)) =
 
 testEvaluate :: Bool
 testEvaluate =
-  evaluate1 (Operation (Value 2) [(Plus, Value 3), (Times, Value 4)])
+  evaluate (Operation (Value 2) [(Plus, Value 3), (Times, Value 4)])
     == 14
 
 testEvaluate1 :: Bool
 testEvaluate1 =
-  evaluate1 (Operation (Value 2) [(Times, Value 3), (Plus, Value 4)])
+  evaluate (Operation (Value 2) [(Times, Value 3), (Plus, Value 4)])
     == 10
+
+-- | A value is a token that is a number
+valueEP :: Parser [Token] Expression
+valueEP =  do
+    (Number n)  <- consume
+    pure . Value $ n
+
+operatorP :: Parser [Token] Operator
+operatorP = do
+  (Operator op) <- consume
+  pure op
+
+
+--- Tentativo iniziale fallito
+{-
+parExprP :: Parser [Token] Expression
+parExprP = between (item OpenParens)
+                   (item ClosedParens)
+                   expressionP <|> expressionP
+
+
+-- | An operation is a
+operationP :: Parser [Token] Expression
+operationP = do
+  expr <- parExprP
+  ops <- many (liftA2 (,) operatorP parExprP)
+  return $ Operation expr ops
+
+-- a parser from a list of tokens to an expression
+expressionP :: Parser [Token] Expression
+expressionP = valueEP <|> operationP
+-}
+
+parExprP :: Parser [Token] Expression
+parExprP = between (item OpenParens)
+                   (item ClosedParens)
+                   expressionP <|> valueEP -- hic est casus basis recursionis
+
+expressionP :: Parser [Token] Expression
+expressionP = expressionP' <|> valueEP
+  where
+    expressionP' = do
+        expr <- parExprP
+        ops <- many (liftA2 (,) operatorP parExprP)
+        pure $ Operation expr ops
+
+--- Runner
+-- try to parse an arithmetic expression from a whole string
+parse :: String -> Maybe ([Token], Int)
+parse = parse' $ expressionP <* eof
+
+
+parse' :: Parser [Token] Expression -> String -> Maybe ([Token], Int)
+parse' f = fmap (fmap evaluate) . runParser f . cleanSpaces . tokenize
+
+t :: String -> Int -> IO ()
+t x r =
+    if parse x == Just ([], r)
+        then pure ()
+        else
+            error
+                $ "assertion failed: "
+                    ++ x
+                    ++ " should be "
+                    ++ show r
+                    ++ " but we got "
+                    ++ show
+                        (parse x)
+
+
+testss :: IO ()
+testss = do
+    t "1" 1
+    t "(1)" 1
+    t "10 + 2" 12
+    t "1+2 + 3" 6
+    t "1 + 2* 3" 7
+    t "1 * 2 + 3" 5
+    t "1 * 2 * 3" 6
+    t "1 + 2 * 3 + 4" 11
+    t "1 + 2 * 3 + 4 * 5" 27
+    t "(1 + 2) * 3 + 4 * 5" 29
+    t "((1 + 5))" 6
+    t "((1 + 5) * 3)" 18
+    t "((1+5)*3)+(4)" 22
+    putStrLn "all tests passed"
