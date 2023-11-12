@@ -19,10 +19,9 @@ import Control.Applicative
     optional,
     some,
   )
-
 import Control.Monad (MonadPlus (..))
 import Data.Bool (Bool)
-import Data.Char
+import Data.Char (isDigit, isSpace, ord)
 import Data.Functor (($>))
 import Data.Map (Map)
 import qualified Data.Map.Lazy as Map
@@ -132,12 +131,17 @@ testString = runParser (string "as") "asd" == Just ("d", "as")
 sepBy :: Parser s a -> Parser s b -> Parser s [a]
 sepBy p sep = scan
   where
-    scan = liftA2 (:) p ((sep *> scan) <|> pure [])
+    scan = liftA2 (:) p ((sep *> scan) <|> pure []) <|> pure []
 
 testSepBy :: Bool
 testSepBy =
   runParser (sepBy (string "asd") comma) "asd,asd"
     == Just ("", ["asd", "asd"])
+
+testSepByNothing :: Bool
+testSepByNothing =
+  runParser (sepBy (string "asd") comma) ""
+    == Just ("", [])
 
 -- parse a value enclosed by two ignored parsers
 between :: Parser s a -> Parser s b -> Parser s c -> Parser s c
@@ -177,6 +181,9 @@ word = some $ satisfy (`elem` (['a' .. 'z'] :: String))
 -- parse a natural number
 natural :: ParserS Integer
 natural = read <$> some (satisfy isDigit)
+
+testNatural :: Bool
+testNatural = runParser natural "001" == Just ("", 1)
 
 -- parse an haskell-style list of values, use between and sepBy
 list :: ParserS a -> ParserS [a]
@@ -271,3 +278,115 @@ tests =
 runTests :: Tests -> IO ()
 runTests = mapM_ $ \(name, value) ->
   print (name ++ ": " ++ show value)
+
+--------------------------------------------------------------------------------
+--- Part 2: Arithmetic expressions' parser -------------------------------------
+--------------------------------------------------------------------------------
+
+item :: (Eq a) => a -> Parser [a] a
+item c = satisfy (== c)
+
+data Operator = Plus | Minus | Times | Div
+  deriving (Show, Eq)
+
+operation :: Operator -> Int -> Int -> Int
+operation Plus = (+)
+operation Minus = (-)
+operation Times = (*)
+operation Div = div
+
+data Token
+  = OpenParens
+  | ClosedParens
+  | Number Integer
+  | Operator Operator
+  | Space -- discuss why Space is good to have
+  deriving (Show, Eq)
+
+-- tokenize a string
+-- hint: use foldr!
+-- think hard about how to tokenize numbers with more that one digit
+-- allowed symbols in the expression are "0123456789 ()+-*/"
+-- only (multiple digits) integers are allowed
+
+tokenize :: String -> [Token]
+tokenize = foldr f []
+  where
+    f :: Char -> [Token] -> [Token]
+    f c tokens
+      | c == ' ' = Space : tokens
+      | c == '(' = OpenParens : tokens
+      | c == ')' = ClosedParens : tokens
+      | c == '+' = Operator Plus : tokens
+      | c == '-' = Operator Minus : tokens
+      | c == '*' = Operator Times : tokens
+      | c == '/' = Operator Div : tokens
+      | isDigit c = case tokens of
+          (Number n : ts) -> Number (read [c] * 10 ^ length (show n) + n) : ts
+          _ -> Number (read [c]) : tokens
+      | otherwise = tokens
+
+cleanSpaces :: [Token] -> [Token]
+cleanSpaces = filter (/= Space)
+
+testTokenize :: Bool
+testTokenize =
+  tokenize "(12 + 35) * 20"
+    == [ OpenParens,
+         Number 12,
+         Space,
+         Operator Plus,
+         Space,
+         Number 35,
+         ClosedParens,
+         Space,
+         Operator Times,
+         Space,
+         Number 20
+       ]
+
+-- arithmetic expressions, we support operations on multiple operands
+data Expression = Value Int | Operation Expression [(Operator, Expression)]
+  deriving (Show, Eq)
+
+data Precedence = Low | High
+  deriving (Show, Eq, Ord)
+
+precedence :: Operator -> Precedence
+precedence Plus = Low
+precedence Minus = Low
+precedence Times = High
+precedence Div = High
+
+-- evaluate an expression respecting operator precedence inside multiple operands
+-- operations
+-- our operations are all left associatives so we can evaluate them in a single
+-- pass from left to right
+-- hint: use pattern matching to inspect the "next" operation
+
+evaluate :: Expression -> Int
+evaluate (Value n) = n
+evaluate (Operation e []) = evaluate e
+evaluate (Operation e1 [(op, e2)]) = operation op (evaluate e1) (evaluate e2)
+evaluate (Operation e1 ((op1, e2) : (op2, e3) : exprs)) =
+  if precedence op1 >= precedence op2
+    then
+      operation
+        op2
+        (operation op1 (evaluate e1) (evaluate e2))
+        (evaluate (Operation (Value . evaluate $ e3) exprs))
+    else
+      operation
+        op1
+        (evaluate e1)
+        (evaluate (Operation (Value . evaluate $ e2) ((op2, e3) : exprs)))
+
+testEvaluate :: Bool
+testEvaluate =
+  evaluate1 (Operation (Value 2) [(Plus, Value 3), (Times, Value 4)])
+    == 14
+
+testEvaluate1 :: Bool
+testEvaluate1 =
+  evaluate1 (Operation (Value 2) [(Times, Value 3), (Plus, Value 4)])
+    == 10

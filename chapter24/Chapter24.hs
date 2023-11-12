@@ -147,7 +147,7 @@ naturalNumber :: Parser Integer
 naturalNumber = read <$> some parseDigit
 
 integerNumber :: Parser Integer
-integerNumber = (char '-') >> negate <$> base10Integer <|> base10Integer
+integerNumber = (char '-') >> negate <$> naturalNumber <|> naturalNumber
 
 -- I numeri italiani hanno il prefisso seguito dal numero vero e proprio
 
@@ -163,6 +163,7 @@ prefixP = read <$> count 3 digit
 
 internationalPrefixP :: Parser Prefix
 internationalPrefixP = parseWithPlus <|> parseWithZeros
+  where
     parseWithPlus = char '+' >> count 2 digit >>= (return . read)
     parseWithZeros = string "00" >> count 2 digit >>= (return . read)
 
@@ -177,3 +178,28 @@ phoneNumbP = do
   return $ (PhoneNumb prefix subscriber)
 
 -- da aggiungere il prefisso internazionale e il fatto che il subscriber può essere separato da spazi o trattini
+
+data ActivityLog = ActivityLog {
+    date :: String,
+    activities :: [Activity]
+} deriving (Show)
+
+data Activity = Activity {
+    startTime :: Integer,
+    endTime :: Integer,
+    description :: String
+} deriving (Show)
+
+
+data Expression = Number Integer
+                | Add Expression Expression
+                | Subtract Expression Expression
+                deriving (Eq, Show)
+
+eval :: Expression -> Integer
+eval (Number n) = n
+eval (Add e1 e2) = eval e1 + eval e2
+eval (Subtract e1 e2) = eval e1 - eval e2
+
+expr :: Expression
+expr = Add (Number 1) (Subtract (Number 2) (Number 3))
