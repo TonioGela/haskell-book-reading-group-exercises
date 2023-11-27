@@ -25,9 +25,10 @@ library
       Chapter23
       Chapter24
       ParserPaolino
-      ParserWithFailures
+      ShuntingYard
       Type
       Value
+      Chapter25
   other-modules:
       Paths_Emraors
   hs-source-dirs:
@@ -44,6 +45,7 @@ library
       chapter22
       chapter23
       chapter24
+      chapter25
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-unused-top-binds
   build-depends:
       QuickCheck

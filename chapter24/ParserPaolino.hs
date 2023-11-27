@@ -10,6 +10,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 {-# OPTIONS_GHC -Wno-unused-matches #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module ParserPaolino () where
 
@@ -393,6 +394,8 @@ testEvaluate1 :: Bool
 testEvaluate1 =
   evaluate (Operation (Value 2) [(Times, Value 3), (Plus, Value 4)])
     == 10
+
+
 
 -- | A value is a token that is a number
 valueEP :: Parser [Token] Expression

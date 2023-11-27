@@ -1,5 +1,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingStrategies#-}
+{-# LANGUAGE DeriveGeneric #-}
+
 
 module Value (Value (..), Record (..))
 where

@@ -6,7 +6,7 @@ import Test.QuickCheck.Function ()
 import Data.List (sort, intersperse)
 import Data.Char (isAlpha, toUpper)
 import Chapter13 (handleGuess, fillInCharacter, Puzzle (..))
-
+import Control.Monad (liftM, liftM2, liftM3)
 
 
 dividedBy :: Integral a => a -> a -> (a, a)
@@ -93,6 +93,7 @@ prop_additionGreater x = x + 1 > x
 
 runQc :: IO ()
 runQc = quickCheck prop_additionGreater
+
 
 ---------------
 ---Exercises---
