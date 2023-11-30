@@ -1,8 +1,16 @@
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# LANGUAGE TupleSections #-}
 
 module Chapter26 () where
 
-import Control.Monad
+
+import Control.Monad.Trans.Reader
+    ( runReader, Reader, ReaderT(ReaderT), ask )
+import Control.Monad (liftM, (<=<))
+import Data.Bifunctor (first)
+import Database.Redis (Reply(Integer))
 
 -- | MaybeT
 data MaybeT m a where
@@ -55,37 +63,35 @@ swapEitherT (EitherT mea) = EitherT $ fmap swapEither mea
     swapEither (Right a) = Left a
 
 eitherT :: Monad m => (a -> m c) -> (b -> m c) -> EitherT a m b -> m c
-eitherT f g = (either f g =<<) . runEitherT
+eitherT f g = either f g <=< runEitherT
 
 -- | ReaderT
+data ReaderT' r m a where
+  ReaderT' :: {runReaderT' :: r -> m a} -> ReaderT' r m a
 
-data ReaderT r m a where
-  ReaderT :: {runReaderT :: r -> m a} -> ReaderT r m a
+instance Functor m => Functor (ReaderT' r m) where
+  fmap f (ReaderT' rma) =
+    ReaderT' $ (fmap . fmap) f rma
 
-instance Functor m => Functor (ReaderT r m) where
-  fmap f (ReaderT rma) =
-    ReaderT $ (fmap . fmap) f rma
+instance Applicative m => Applicative (ReaderT' r m) where
+  pure x = ReaderT' $ (pure . pure) x
+  (ReaderT' rmab) <*> (ReaderT' rma) =
+    ReaderT' $ (<*>) <$> rmab <*> rma
 
-instance Applicative m => Applicative (ReaderT r m) where
-  pure x = ReaderT $ (pure . pure) x
-  (ReaderT rmab) <*> (ReaderT rma) =
-    ReaderT $ (<*>) <$> rmab <*> rma
-
-instance Monad m => Monad (ReaderT r m) where
+instance Monad m => Monad (ReaderT' r m) where
   return = pure
-  (ReaderT rma) >>= f =
-    ReaderT $ \r -> do
+  (ReaderT' rma) >>= f =
+    ReaderT' $ \r -> do
       a <- rma r
-      runReaderT (f a) r
+      runReaderT' (f a) r
 
 -- | StateT
-
 data StateT s m a where
   StateT :: {runStateT :: s -> m (a, s)} -> StateT s m a
 
 instance Functor m => Functor (StateT s m) where
   fmap f (StateT sma) =
-    StateT $ (fmap . fmap) (\(a, s) -> (f a, s)) sma
+    StateT $ (fmap . fmap) (first f) sma
 
 instance Monad m => Applicative (StateT s m) where
   pure x = StateT $ \s -> pure (x, s)
@@ -115,6 +121,27 @@ instance MonadTrans (ReaderT r) where
   lift = ReaderT . const
 
 instance MonadTrans (StateT s) where
-  lift = undefined
+  lift :: Monad m => m a -> StateT s m a
+  lift ma = StateT $ \s -> fmap (,s) ma
 
 -- | Chapter exercises
+
+rDec :: Num a => Reader a a
+rDec = do
+  num <- ask
+  return (num - 1)
+
+testRDec :: Bool
+testRDec = runReader rDec (1 ::Integer)  == 0
+
+rShow :: Show a => Reader a String
+rShow = do
+  a <- ask
+  return . show $ a
+
+testRShow :: Bool
+testRShow = runReader rShow (1 :: Integer)  ==  "1"
+
+
+rPrintAndInc :: (Num a, Show a) => ReaderT a IO a
+rPrintAndInc = undefined
