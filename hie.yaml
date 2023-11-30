@@ -41,3 +41,6 @@ cradle:
 
     - path: "chapter25"
       component: "lib:Emraors"
+
+    - path: "chapter26"
+      component: "lib:Emraors"

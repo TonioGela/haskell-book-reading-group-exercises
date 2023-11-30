@@ -29,6 +29,7 @@ library
       Type
       Value
       Chapter25
+      Chapter26
   other-modules:
       Paths_Emraors
   hs-source-dirs:
@@ -46,6 +47,7 @@ library
       chapter23
       chapter24
       chapter25
+      chapter26
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-unused-top-binds
   build-depends:
       QuickCheck
