@@ -2,6 +2,8 @@
 
 module Chapter26 () where
 
+import Control.Monad
+
 -- | MaybeT
 data MaybeT m a where
   MaybeT :: {runMaybeT :: m (Maybe a)} -> MaybeT m a
@@ -54,3 +56,65 @@ swapEitherT (EitherT mea) = EitherT $ fmap swapEither mea
 
 eitherT :: Monad m => (a -> m c) -> (b -> m c) -> EitherT a m b -> m c
 eitherT f g = (either f g =<<) . runEitherT
+
+-- | ReaderT
+
+data ReaderT r m a where
+  ReaderT :: {runReaderT :: r -> m a} -> ReaderT r m a
+
+instance Functor m => Functor (ReaderT r m) where
+  fmap f (ReaderT rma) =
+    ReaderT $ (fmap . fmap) f rma
+
+instance Applicative m => Applicative (ReaderT r m) where
+  pure x = ReaderT $ (pure . pure) x
+  (ReaderT rmab) <*> (ReaderT rma) =
+    ReaderT $ (<*>) <$> rmab <*> rma
+
+instance Monad m => Monad (ReaderT r m) where
+  return = pure
+  (ReaderT rma) >>= f =
+    ReaderT $ \r -> do
+      a <- rma r
+      runReaderT (f a) r
+
+-- | StateT
+
+data StateT s m a where
+  StateT :: {runStateT :: s -> m (a, s)} -> StateT s m a
+
+instance Functor m => Functor (StateT s m) where
+  fmap f (StateT sma) =
+    StateT $ (fmap . fmap) (\(a, s) -> (f a, s)) sma
+
+instance Monad m => Applicative (StateT s m) where
+  pure x = StateT $ \s -> pure (x, s)
+  (StateT smab) <*> (StateT sma) =
+    StateT $ \s -> do
+      (ab, s') <- smab s
+      (a, s'') <- sma s'
+      return (ab a, s'')
+
+instance Monad m => Monad (StateT s m) where
+  return = pure
+  (StateT sma) >>= f =
+    StateT $ \s -> do
+      (a, s') <- sma s
+      runStateT (f a) s'
+
+class MonadTrans t where
+  lift :: Monad m => m a -> t m a
+
+instance MonadTrans MaybeT where
+  lift = MaybeT . fmap pure
+
+instance MonadTrans (EitherT e) where
+  lift = EitherT . fmap pure
+
+instance MonadTrans (ReaderT r) where
+  lift = ReaderT . const
+
+instance MonadTrans (StateT s) where
+  lift = undefined
+
+-- | Chapter exercises
