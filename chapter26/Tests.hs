@@ -1,12 +1,9 @@
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-
 module Tests () where
 
+import Control.Monad.Trans.State (runStateT)
 import Data.Maybe (isJust, isNothing)
-import Morra (Move (Move), Winner (First, Second, Tie), askMove, getWinner, mkMove, mkPlayed)
-import System.Random.Stateful (randomIO)
+import Morra
 import Test.Hspec
-import Test.QuickCheck
 
 testMkPlayed :: IO ()
 testMkPlayed = hspec $ do
@@ -53,9 +50,20 @@ testGetWinner = hspec $ do
       do
         getWinner (Move 2 1) (Move 2 2) `shouldBe` Tie
 
+testPlayRound :: IO ()
+testPlayRound = hspec $ do
+  describe "playRound" $ do
+    it "works as we would like it to do" $ do
+      let initialState = GameState (Human, Human) (0, 0)
+      let expectedState = GameState (Human, Human) (0, 0)
+      let mockImpureGet _ = return (Move 1 1)
+      (_, resultState) <- runStateT (playRound mockImpureGet) initialState
+      resultState `shouldBe` expectedState
+
 main :: IO ()
 main = do
   testMkPlayed
   testMkMove
   testGetWinner
+  testPlayRound
   putStrLn "All tests passed!"

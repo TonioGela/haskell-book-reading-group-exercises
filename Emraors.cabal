@@ -31,6 +31,7 @@ library
       Chapter25
       Chapter26
       Morra
+      Tests
   other-modules:
       Paths_Emraors
   hs-source-dirs:

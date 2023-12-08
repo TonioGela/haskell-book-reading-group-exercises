@@ -14,6 +14,10 @@ module Morra
     updateScores,
     Winner (..),
     Move (..),
+    Players,
+    Scores,
+    PlayerType (..),
+    GameState (..),
   )
 where
 
@@ -107,12 +111,12 @@ updateScores Tie s = s
 
 type Morra = StateT GameState IO
 
-playRound :: Morra ()
-playRound = do
+playRound :: (PlayerType -> IO Move) -> Morra ()
+playRound impureGet = do
   GameState players scores <- get
   let (player1, player2) = players
-  move1 <- liftIO $ getMove player1
-  move2 <- liftIO $ getMove player2
+  move1 <- liftIO $ impureGet player1
+  move2 <- liftIO $ impureGet player2
   let winner = getWinner move1 move2
   modify $ \s -> s {scores = updateScores winner scores}
 
@@ -138,8 +142,7 @@ playGame = do
             ++ show score1
             ++ "Player 2 "
             ++ show score2
-      playRound
-      playGame
+      playRound getMove >> playGame
 
 main :: IO ()
 main = do
