@@ -454,4 +454,3 @@ instance Applicative Parser where
   (<*>) (Pure f) pb = fmap f pb
   (<*>) Option {..} pb =
     Option name (fmap (fmap uncurry) patch) $ (,) <$> rest <*> pb
-

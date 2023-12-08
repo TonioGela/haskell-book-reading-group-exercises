@@ -1,16 +1,22 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE InstanceSigs #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# LANGUAGE TupleSections #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 module Chapter26 () where
 
-
+import Control.Monad ((<=<))
+import Control.Monad.Cont (MonadIO (liftIO))
+import Control.Monad.Identity (Identity)
 import Control.Monad.Trans.Reader
-    ( runReader, Reader, ReaderT(ReaderT), ask )
-import Control.Monad (liftM, (<=<))
+  ( ReaderT (ReaderT),
+    ask,
+    runReader,
+    runReaderT,
+  )
+import Control.Monad.Trans.State (StateT, get, put, runStateT)
 import Data.Bifunctor (first)
-import Database.Redis (Reply(Integer))
+import Data.Functor
 
 -- | MaybeT
 data MaybeT m a where
@@ -86,27 +92,27 @@ instance Monad m => Monad (ReaderT' r m) where
       runReaderT' (f a) r
 
 -- | StateT
-data StateT s m a where
-  StateT :: {runStateT :: s -> m (a, s)} -> StateT s m a
+data StateT' s m a where
+  StateT' :: {runStateT' :: s -> m (a, s)} -> StateT' s m a
 
-instance Functor m => Functor (StateT s m) where
-  fmap f (StateT sma) =
-    StateT $ (fmap . fmap) (first f) sma
+instance Functor m => Functor (StateT' s m) where
+  fmap f (StateT' sma) =
+    StateT' $ (fmap . fmap) (first f) sma
 
-instance Monad m => Applicative (StateT s m) where
-  pure x = StateT $ \s -> pure (x, s)
-  (StateT smab) <*> (StateT sma) =
-    StateT $ \s -> do
+instance Monad m => Applicative (StateT' s m) where
+  pure x = StateT' $ \s -> pure (x, s)
+  (StateT' smab) <*> (StateT' sma) =
+    StateT' $ \s -> do
       (ab, s') <- smab s
       (a, s'') <- sma s'
       return (ab a, s'')
 
-instance Monad m => Monad (StateT s m) where
+instance Monad m => Monad (StateT' s m) where
   return = pure
-  (StateT sma) >>= f =
-    StateT $ \s -> do
+  (StateT' sma) >>= f =
+    StateT' $ \s -> do
       (a, s') <- sma s
-      runStateT (f a) s'
+      runStateT' (f a) s'
 
 class MonadTrans t where
   lift :: Monad m => m a -> t m a
@@ -120,28 +126,52 @@ instance MonadTrans (EitherT e) where
 instance MonadTrans (ReaderT r) where
   lift = ReaderT . const
 
-instance MonadTrans (StateT s) where
-  lift :: Monad m => m a -> StateT s m a
-  lift ma = StateT $ \s -> fmap (,s) ma
+instance MonadTrans (StateT' s) where
+  lift :: Monad m => m a -> StateT' s m a
+  lift ma = StateT' $ \s -> fmap (,s) ma
 
 -- | Chapter exercises
-
-rDec :: Num a => Reader a a
+rDec :: Num a => ReaderT a Identity a
 rDec = do
   num <- ask
   return (num - 1)
 
-testRDec :: Bool
-testRDec = runReader rDec (1 ::Integer)  == 0
+rDec' :: Num a => ReaderT a Identity a
+rDec' = ask <&> subtract 1
 
-rShow :: Show a => Reader a String
+testRDec :: Bool
+testRDec = runReader rDec (1 :: Integer) == 0
+
+rShow :: Show a => ReaderT a Identity String
 rShow = do
   a <- ask
   return . show $ a
 
-testRShow :: Bool
-testRShow = runReader rShow (1 :: Integer)  ==  "1"
+rShow' :: Show a => ReaderT a Identity String
+rShow' = ask <&> show
 
+testRShow :: Bool
+testRShow = runReader rShow (1 :: Integer) == "1"
 
 rPrintAndInc :: (Num a, Show a) => ReaderT a IO a
-rPrintAndInc = undefined
+rPrintAndInc = do
+  a <- ask
+  liftIO $ putStrLn $ "Hi: " ++ show a
+  return (a + 1)
+
+testRPrintAndInc :: IO ()
+testRPrintAndInc = do
+  a <- runReaderT rPrintAndInc (1 :: Integer)
+  print a
+
+sPrintIncAccum :: (Num a, Show a) => StateT a IO String
+sPrintIncAccum = do
+  a <- get
+  liftIO $ putStrLn $ "Hi: " ++ show a
+  put (a + 1)
+  return (show a)
+
+testSPrintIncAccum :: IO ()
+testSPrintIncAccum = do
+  a <- runStateT sPrintIncAccum (1 :: Integer)
+  print a

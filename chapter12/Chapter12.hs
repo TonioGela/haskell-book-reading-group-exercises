@@ -1,8 +1,8 @@
 module Chapter12 () where
 
-import Data.Char ( toLower )
-import Data.List ((\\))
 import Data.Bifunctor
+import Data.Char (toLower)
+import Data.List ((\\))
 
 -----------------------
 ---String Processing---
@@ -19,25 +19,25 @@ nothingToa Nothing = "a"
 replaceThe :: String -> String
 replaceThe st = unwords $ map (nothingToa . notThe) $ words st
 
-
 ---Exercise 2---
 vowels :: String
 vowels = "aeiouy"
 
 consonants :: [Char]
-consonants = ['a'..'z'] \\ vowels
+consonants = ['a' .. 'z'] \\ vowels
 
 isVowel :: Char -> Bool
 isVowel = (`elem` vowels) . toLower
 
 isConsonant :: Char -> Bool
-isConsonant =  (`elem` consonants) . toLower
+isConsonant = (`elem` consonants) . toLower
 
 countTheBeforeVowel :: String -> Integer
 countTheBeforeVowel = go . words
-  where go ("the":x:xs) = if isVowel . head $ x then 1 + go xs else go (x:xs)
-        go (_:xs) = go xs
-        go _ = 0
+  where
+    go ("the" : x : xs) = if isVowel . head $ x then 1 + go xs else go (x : xs)
+    go (_ : xs) = go xs
+    go _ = 0
 
 ---Exercise 3---
 countVowel :: String -> Int
@@ -50,13 +50,14 @@ countVowel = length . filter isVowel
 countConsonant :: String -> Int
 countConsonant = length . filter isConsonant
 
-
 newtype Word' = Word' String
   deriving (Eq, Show)
 
 mkWord :: String -> Maybe Word'
-mkWord st = if (countConsonant st - countVowel st) < 0
-              then Nothing else Just . Word' $ st
+mkWord st =
+  if (countConsonant st - countVowel st) < 0
+    then Nothing
+    else Just . Word' $ st
 
 -----------------------
 ---It’s only Natural---
@@ -99,22 +100,22 @@ fromMaybe = flip mayybee id
 ---Exercise 4---
 listToMaybe :: [a] -> Maybe a
 listToMaybe [] = Nothing
-listToMaybe (x:_) = Just x
+listToMaybe (x : _) = Just x
 
 maybeToList :: Maybe a -> [a]
-maybeToList = mayybee [] (:[])
+maybeToList = mayybee [] (: [])
 
 ---Exercise 5---
 catMaybes :: [Maybe a] -> [a]
 catMaybes = concatMap maybeToList
 
 ---Exercise 6---
-maybeCons :: Maybe a ->  Maybe [a] -> Maybe [a]
-maybeCons (Just a) (Just xs) = Just (a:xs)
+maybeCons :: Maybe a -> Maybe [a] -> Maybe [a]
+maybeCons (Just a) (Just xs) = Just (a : xs)
 maybeCons _ _ = Nothing
 
 ---The same function but using the fact that Maybe a is an applicative
-maybeCons' :: Maybe a ->  Maybe [a] -> Maybe [a]
+maybeCons' :: Maybe a -> Maybe [a] -> Maybe [a]
 maybeCons' ma mxs = (:) <$> ma <*> mxs
 
 flipMaybe :: [Maybe a] -> Maybe [a]
@@ -134,10 +135,12 @@ rights' = snd . partitionEithers'
 
 ---Exercise 3---
 partitionEithers' :: [Either a b] -> ([a], [b])
-partitionEithers' = foldr (flip f) ([],[])
-  where f xs = either' (\a -> first (a: ) xs)
-                       (\b -> second (b: ) xs)
-
+partitionEithers' = foldr (flip f) ([], [])
+  where
+    f xs =
+      either'
+        (\a -> first (a :) xs)
+        (\b -> second (b :) xs)
 
 ---Exercise 4---
 eitherMaybe' :: (b -> c) -> Either a b -> Maybe c
@@ -145,7 +148,7 @@ eitherMaybe' f (Right b) = Just (f b)
 eitherMaybe' _ _ = Nothing
 
 ---Exercise 5---
-either' ::  (a -> c) -> (b -> c) -> Either a b -> c
+either' :: (a -> c) -> (b -> c) -> Either a b -> c
 either' f _ (Left a) = f a
 either' _ g (Right b) = g b
 
@@ -164,8 +167,8 @@ myIterate f a = a : myIterate f (f a)
 ---Exercise 2---
 myUnfoldr :: (b -> Maybe (a, b)) -> b -> [a]
 myUnfoldr f b = case f b of
-                  Nothing -> []
-                  (Just (a1,b1)) -> a1 : myUnfoldr f b1
+  Nothing -> []
+  (Just (a1, b1)) -> a1 : myUnfoldr f b1
 
 ---Exercise 3---
 betterIterate :: (a -> a) -> a -> [a]
@@ -175,18 +178,22 @@ betterIterate f = myUnfoldr (\a -> Just (f a, a))
 ---Finally something other than a list!---
 ------------------------------------------
 
-
 data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a)
-        deriving (Eq, Ord, Show)
+  deriving (Eq, Ord, Show)
 
 ---Exercise 1---
-unfold :: (a -> Maybe (a,b,a)) -> a -> BinaryTree b
+unfold :: (a -> Maybe (a, b, a)) -> a -> BinaryTree b
 unfold f a = case f a of
-               Nothing -> Leaf
-               (Just (a1, b1, a2)) -> Node (unfold f a1) b1 (unfold f a2)
+  Nothing -> Leaf
+  (Just (a1, b1, a2)) -> Node (unfold f a1) b1 (unfold f a2)
 
 ---Exercise 2---
 treeBuild :: Integer -> BinaryTree Integer
-treeBuild n = unfold (\m -> if m >= n
-                       then Nothing else Just (m + 1, m , m + 1)) 0
-
+treeBuild n =
+  unfold
+    ( \m ->
+        if m >= n
+          then Nothing
+          else Just (m + 1, m, m + 1)
+    )
+    0

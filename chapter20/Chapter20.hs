@@ -1,11 +1,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
+
 module Chapter20 () where
 
-import Data.Monoid (Sum(..), Product(..), Any(..))
-
+import Data.Monoid (Any (..), Product (..), Sum (..))
 import Test.QuickCheck
-import Test.QuickCheck.Checkers ( eq, quickBatch, EqProp(..))
+import Test.QuickCheck.Checkers (EqProp (..), eq, quickBatch)
 import Test.QuickCheck.Classes (foldable)
 
 ---Direttamente da ---https://hackage.haskell.org/package/base-4.18.0.0/docs/Prelude.html#v:foldMap
@@ -20,11 +20,13 @@ elem' x = getAny . foldMap (Any . (== x))
 
 minimum' :: (Foldable t, Ord a) => t a -> Maybe a
 minimum' = foldr minMaybe Nothing
-  where minMaybe a = Just . maybe a (min a)
+  where
+    minMaybe a = Just . maybe a (min a)
 
 maximum' :: (Foldable t, Ord a) => t a -> Maybe a
 maximum' = foldr maxMaybe Nothing
-  where maxMaybe a = Just . maybe a (max a)
+  where
+    maxMaybe a = Just . maybe a (max a)
 
 null' :: (Foldable t) => t a -> Bool
 null' = not . getAny . foldMap (const $ Any True)
@@ -33,7 +35,7 @@ length' :: (Foldable t) => t a -> Int
 length' = getSum . foldMap (const $ Sum 1)
 
 toList' :: (Foldable t) => t a -> [a]
-toList' = foldMap (:[])
+toList' = foldMap (: [])
 
 fold' :: (Foldable t, Monoid m) => t m -> m
 fold' = foldMap id
@@ -62,8 +64,10 @@ instance Eq a => EqProp (Constant a b) where
   (=-=) = eq
 
 checkConstant :: IO ()
-checkConstant = quickBatch $ foldable
-  (trigger @(Constant Int) @String @String @String @(Sum Int) @String)
+checkConstant =
+  quickBatch $
+    foldable
+      (trigger @(Constant Int) @String @String @String @(Sum Int) @String)
 
 ---2---
 
@@ -81,8 +85,10 @@ instance (Eq a, Eq b) => EqProp (Two a b) where
   (=-=) = eq
 
 checkTwo :: IO ()
-checkTwo = quickBatch $ foldable
-  (trigger @(Two Int) @String @String @String @(Sum Int) @String)
+checkTwo =
+  quickBatch $
+    foldable
+      (trigger @(Two Int) @String @String @String @(Sum Int) @String)
 
 ---3---
 
@@ -93,16 +99,20 @@ instance Foldable (Three a b) where
   foldMap f (Three _ _ c) = f c
   foldr f z (Three _ _ c) = f c z
 
-instance (Arbitrary a, Arbitrary b, Arbitrary c)
-        => Arbitrary (Three a b c) where
+instance
+  (Arbitrary a, Arbitrary b, Arbitrary c) =>
+  Arbitrary (Three a b c)
+  where
   arbitrary = Three <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance (Eq a, Eq b, Eq c) => EqProp (Three a b c) where
   (=-=) = eq
 
 checkThree :: IO ()
-checkThree = quickBatch $ foldable
-  (trigger @(Three String String ) @String @String @String @(Sum Int) @String)
+checkThree =
+  quickBatch $
+    foldable
+      (trigger @(Three String String) @String @String @String @(Sum Int) @String)
 
 ---4---
 
@@ -120,8 +130,10 @@ instance (Eq a, Eq b) => EqProp (Three' a b) where
   (=-=) = eq
 
 checkThree' :: IO ()
-checkThree' = quickBatch $ foldable
-  (trigger @(Three' String) @String @String @String @(Sum Int) @String)
+checkThree' =
+  quickBatch $
+    foldable
+      (trigger @(Three' String) @String @String @String @(Sum Int) @String)
 
 ---5---
 
@@ -133,20 +145,27 @@ instance Foldable (Four' a) where
   foldr f z (Four' _ b1 b2 b3) = f b1 (f b2 (f b3 z))
 
 instance (Arbitrary a, Arbitrary b) => Arbitrary (Four' a b) where
-  arbitrary = Four' <$> arbitrary
-                    <*> arbitrary
-                    <*> arbitrary
-                    <*> arbitrary
+  arbitrary =
+    Four'
+      <$> arbitrary
+      <*> arbitrary
+      <*> arbitrary
+      <*> arbitrary
 
 instance (Eq a, Eq b) => EqProp (Four' a b) where
   (=-=) = eq
 
 checkFour' :: IO ()
-checkFour' = quickBatch $ foldable
-  (trigger @(Four' String) @String @String @String @(Sum Int) @String)
+checkFour' =
+  quickBatch $
+    foldable
+      (trigger @(Four' String) @String @String @String @(Sum Int) @String)
 
 ---Filtering---
 
-filterF :: (Applicative f, Foldable t, Monoid (f a))
-        => (a -> Bool) -> t a -> f a
+filterF ::
+  (Applicative f, Foldable t, Monoid (f a)) =>
+  (a -> Bool) ->
+  t a ->
+  f a
 filterF f = foldMap (\x -> if f x then pure x else mempty)

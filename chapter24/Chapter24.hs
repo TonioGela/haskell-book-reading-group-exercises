@@ -179,22 +179,24 @@ phoneNumbP = do
 
 -- da aggiungere il prefisso internazionale e il fatto che il subscriber può essere separato da spazi o trattini
 
-data ActivityLog = ActivityLog {
-    date :: String,
+data ActivityLog = ActivityLog
+  { date :: String,
     activities :: [Activity]
-} deriving (Show)
+  }
+  deriving (Show)
 
-data Activity = Activity {
-    startTime :: Integer,
+data Activity = Activity
+  { startTime :: Integer,
     endTime :: Integer,
     description :: String
-} deriving (Show)
+  }
+  deriving (Show)
 
-
-data Expression = Number Integer
-                | Add Expression Expression
-                | Subtract Expression Expression
-                deriving (Eq, Show)
+data Expression
+  = Number Integer
+  | Add Expression Expression
+  | Subtract Expression Expression
+  deriving (Eq, Show)
 
 eval :: Expression -> Integer
 eval (Number n) = n

@@ -2,13 +2,13 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
 {-# HLINT ignore "Redundant bracket" #-}
 module Chapter16 () where
 
-import Test.QuickCheck
 import Control.Arrow ()
 import Data.Bifunctor
-
+import Test.QuickCheck
 
 functorIdentity :: (Functor f, Eq (f a)) => f a -> Bool
 functorIdentity f = fmap id f == f
@@ -16,10 +16,10 @@ functorIdentity f = fmap id f == f
 functorCompose :: (Eq (f c), Functor f) => (a -> b) -> (b -> c) -> f a -> Bool
 functorCompose f g x = fmap g (fmap f x) == (fmap (g . f) x)
 
-
 functorCompose' :: (Eq (f c), Functor f) => f a -> Fun a b -> Fun b c -> Bool
-functorCompose' x (Fun _ f) (Fun _ g) = (fmap (g . f) x)
-                                      == (fmap g . fmap f $ x)
+functorCompose' x (Fun _ f) (Fun _ g) =
+  (fmap (g . f) x)
+    == (fmap g . fmap f $ x)
 
 ---Exercises---
 
@@ -80,6 +80,7 @@ checkThree :: IO ()
 checkThree = do
   quickCheck (functorIdentity @(Three' String) @String)
   quickCheck (functorCompose' @(Three' Integer) @Integer @String @String)
+
 ---Gli altri sono più o meno la stessa solfa.
 ---Trivial non puo' essere un funtore, visto che il suo kind è *
 
@@ -127,15 +128,15 @@ checkSum = do
 -----------------------
 
 ---Exercises 1-2-3-4-5
---1: No
---2-3: Si'
---4: No; il kind è Mu :: (* -> *) -> *
---5: No, il kind è D :: *
+-- 1: No
+-- 2-3: Si'
+-- 4: No; il kind è Mu :: (* -> *) -> *
+-- 5: No, il kind è D :: *
 
 ---Rearrange the arguments to the type constructor of the datatype so the ---Functor instance works---
---1: Sum b a
---2: Company a c b
---3: More b a
+-- 1: Sum b a
+-- 2: Company a c b
+-- 3: More b a
 
 ---Write Functor instances for the following datatypes---
 
@@ -217,6 +218,7 @@ data Parappa f g a = DaWrappa (f a) (g a)
 
 instance (Functor f, Functor g) => Functor (Parappa f g) where
   fmap f (DaWrappa fa ga) = DaWrappa (fmap f fa) (fmap f ga)
+
 instance (Arbitrary (f a), Arbitrary (g a)) => Arbitrary (Parappa f g a) where
   arbitrary = DaWrappa <$> arbitrary <*> arbitrary
 
@@ -232,17 +234,22 @@ data IgnoreOne f g a b = IgnoringSomething (f a) (g b)
 instance (Functor g) => Functor (IgnoreOne f g a) where
   fmap h (IgnoringSomething fa ga) = IgnoringSomething fa (fmap h ga)
 
-instance (Arbitrary (f a), Arbitrary (g b))
-  => Arbitrary (IgnoreOne f g a b) where
+instance
+  (Arbitrary (f a), Arbitrary (g b)) =>
+  Arbitrary (IgnoreOne f g a b)
+  where
   arbitrary = IgnoringSomething <$> arbitrary <*> arbitrary
 
 checkIgnoreOne :: IO ()
-checkIgnoreOne =  do
+checkIgnoreOne = do
   quickCheck (functorIdentity @(IgnoreOne [] Maybe String) @String)
-  quickCheck (functorCompose' @(IgnoreOne [] Maybe String)
-                              @String
-                              @String
-                              @String)
+  quickCheck
+    ( functorCompose' @(IgnoreOne [] Maybe String)
+        @String
+        @String
+        @String
+    )
+
 ---8
 data Notorious g o a t = Notorious (g o) (g a) (g t)
   deriving (Show, Eq)
@@ -250,16 +257,22 @@ data Notorious g o a t = Notorious (g o) (g a) (g t)
 instance (Functor g) => Functor (Notorious g o a) where
   fmap f (Notorious go ga gt) = Notorious go ga (fmap f gt)
 
-instance (Arbitrary (g o), Arbitrary (g a), Arbitrary (g t))
-  => Arbitrary (Notorious g o a t) where
+instance
+  (Arbitrary (g o), Arbitrary (g a), Arbitrary (g t)) =>
+  Arbitrary (Notorious g o a t)
+  where
   arbitrary = Notorious <$> arbitrary <*> arbitrary <*> arbitrary
+
 checkNotorious :: IO ()
 checkNotorious = do
   quickCheck (functorIdentity @(Notorious [] String String) @String)
-  quickCheck (functorCompose' @(Notorious [] String String)
-                              @String
-                              @String
-                              @String)
+  quickCheck
+    ( functorCompose' @(Notorious [] String String)
+        @String
+        @String
+        @String
+    )
+
 ---9---
 
 data List a = Nil | Cons a (List a)
@@ -270,8 +283,11 @@ instance Functor List where
   fmap f (Cons a xs) = Cons (f a) (fmap f xs)
 
 instance Arbitrary a => Arbitrary (List a) where
-  arbitrary =  frequency [(1, pure Nil)
-                         , (3, Cons <$> arbitrary <*> arbitrary)]
+  arbitrary =
+    frequency
+      [ (1, pure Nil),
+        (3, Cons <$> arbitrary <*> arbitrary)
+      ]
 
 checkList :: IO ()
 checkList = do
@@ -280,8 +296,8 @@ checkList = do
 
 ---10---
 
-data GoatLord a =
-  NoGoat
+data GoatLord a
+  = NoGoat
   | OneGoat a
   | MoreGoats (GoatLord a) (GoatLord a) (GoatLord a)
   deriving (Eq, Show)
@@ -292,11 +308,17 @@ instance Functor GoatLord where
   fmap f (MoreGoats l c r) = MoreGoats (fmap f l) (fmap f c) (fmap f r)
 
 instance Arbitrary a => Arbitrary (GoatLord a) where
-  arbitrary = frequency [(2, pure NoGoat)
-                        , (1, OneGoat <$> arbitrary)
-                        , (1, MoreGoats <$> arbitrary
-                                        <*> arbitrary
-                                        <*> arbitrary)]
+  arbitrary =
+    frequency
+      [ (2, pure NoGoat),
+        (1, OneGoat <$> arbitrary),
+        ( 1,
+          MoreGoats
+            <$> arbitrary
+            <*> arbitrary
+            <*> arbitrary
+        )
+      ]
 
 checkGoat :: IO ()
 checkGoat = do
@@ -313,16 +335,19 @@ instance Show a => Show (TalkToMe a) where
   show (Read _) = "Read" ++ "a function"
 
 instance Arbitrary a => Arbitrary (TalkToMe a) where
-  arbitrary = frequency [(1, pure Halt)
-                        , (2, Print <$> arbitrary <*> arbitrary)
-                        , (1, Read <$> arbitrary)]
+  arbitrary =
+    frequency
+      [ (1, pure Halt),
+        (2, Print <$> arbitrary <*> arbitrary),
+        (1, Read <$> arbitrary)
+      ]
 
 instance Functor TalkToMe where
   fmap _ Halt = Halt
   fmap f (Print st a) = Print st . f $ a
   fmap f (Read h) = Read $ f . h
 
-functorCompose'' :: Eq c => String -> TalkToMe a  -> Fun a b -> Fun b c -> Bool
+functorCompose'' :: Eq c => String -> TalkToMe a -> Fun a b -> Fun b c -> Bool
 functorCompose'' st x (Fun _ f) (Fun _ g) =
   case ((fmap (g . f) x), (fmap g . fmap f $ x)) of
     (Halt, Halt) -> True
@@ -340,30 +365,27 @@ checkTalkToMe = quickCheck (functorCompose'' @String @String @String)
 data Tree a = Leaf | Node (Tree a) a (Tree a)
 
 instance Functor Tree where
-    fmap :: (a -> b) -> Tree a -> Tree b
-    fmap _ Leaf = Leaf
-    fmap f (Node l x r) = Node (fmap f l) (f x) (fmap f r)
+  fmap :: (a -> b) -> Tree a -> Tree b
+  fmap _ Leaf = Leaf
+  fmap f (Node l x r) = Node (fmap f l) (f x) (fmap f r)
 
 data TreeL a = LeafL a | NodeL (TreeL a) (TreeL a)
 
 instance Functor TreeL where
-    fmap :: (a -> b) -> TreeL a -> TreeL b
-    fmap f (LeafL a) = LeafL (f a)
-    fmap f (NodeL l r) = NodeL (fmap f l) (fmap f r)
-
+  fmap :: (a -> b) -> TreeL a -> TreeL b
+  fmap f (LeafL a) = LeafL (f a)
+  fmap f (NodeL l r) = NodeL (fmap f l) (fmap f r)
 
 data Trie a = Trie [(a, Trie a)]
   deriving (Show, Eq)
 
 instance Functor Trie where
-    fmap f (Trie xs) = Trie $  map (bimap f (fmap f)) xs
+  fmap f (Trie xs) = Trie $ map (bimap f (fmap f)) xs
 
-
-newtype F a = F (Int -> (a,a))
+newtype F a = F (Int -> (a, a))
 
 instance Functor F where
-    fmap f (F g) = F $ \x -> let (a,b) = g x in (f a, f b)
-
+  fmap f (F g) = F $ \x -> let (a, b) = g x in (f a, f b)
 
 newtype C a = C ((a -> Int) -> Int) -- due volte controvariante -> covariante
 
@@ -371,8 +393,8 @@ runC :: C Int -> Int
 runC (C f) = f id
 
 instance Functor C where
-    fmap :: (a -> b) -> C a -> C b
-    fmap f (C g) = C $ \h -> g $ h . f
+  fmap :: (a -> b) -> C a -> C b
+  fmap f (C g) = C $ \h -> g $ h . f
 
 {-
 Dimostrazione che C è un funtore

@@ -1,11 +1,11 @@
 {-# LANGUAGE TypeApplications #-}
+
 module Chapter18 () where
 
+import Data.Functor
 import Test.QuickCheck
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
-import Data.Functor
-
 
 trigger :: m (a, b, c)
 trigger = undefined
@@ -60,17 +60,24 @@ instance Monad (PhhhbbtttEither b) where
   (>>=) (Right' b) _ = Right' b
 
 instance (Arbitrary a, Arbitrary b) => Arbitrary (PhhhbbtttEither b a) where
-  arbitrary = frequency [(1, Left' <$> arbitrary)
-                        ,(1, Right' <$> arbitrary)]
+  arbitrary =
+    frequency
+      [ (1, Left' <$> arbitrary),
+        (1, Right' <$> arbitrary)
+      ]
 
 instance (Eq a, Eq b) => EqProp (PhhhbbtttEither b a) where
   (=-=) = eq
 
 checkPhhhbbtttEither :: IO ()
-checkPhhhbbtttEither = quickBatch $ monad (trigger @(PhhhbbtttEither String)
-                                                   @String
-                                                   @String
-                                                   @String)
+checkPhhhbbtttEither =
+  quickBatch $
+    monad
+      ( trigger @(PhhhbbtttEither String)
+          @String
+          @String
+          @String
+      )
 
 ---Exercise 3---
 
@@ -123,8 +130,11 @@ instance Monad List where
   (>>=) (Cons x xs) f = f x <> (xs >>= f)
 
 instance Arbitrary a => Arbitrary (List a) where
-  arbitrary = frequency [(1, return Nil)
-                        ,(1, Cons <$> arbitrary <*> arbitrary)]
+  arbitrary =
+    frequency
+      [ (1, return Nil),
+        (1, Cons <$> arbitrary <*> arbitrary)
+      ]
 
 instance Eq a => EqProp (List a) where
   (=-=) = eq
@@ -135,7 +145,7 @@ checkList = quickBatch $ monad (trigger @List @String @String @String)
 ---Exercise 5---
 
 j :: Monad m => m (m a) -> m a
-j =  (>>= id)
+j = (>>= id)
 
 ---Exercise 6---
 
@@ -164,5 +174,3 @@ meh' f = foldr (l2 (:) . f) (pure [])
 
 flipType :: (Monad m) => [m a] -> m [a]
 flipType = flip meh id
-
-

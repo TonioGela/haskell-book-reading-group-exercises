@@ -30,6 +30,7 @@ library
       Value
       Chapter25
       Chapter26
+      Morra
   other-modules:
       Paths_Emraors
   hs-source-dirs:

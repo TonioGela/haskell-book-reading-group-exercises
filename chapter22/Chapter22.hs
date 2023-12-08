@@ -1,10 +1,8 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 
-
-
 module Chapter22 () where
 
-newtype Reader r a = Reader { runReader :: r -> a }
+newtype Reader r a = Reader {runReader :: r -> a}
 
 instance Functor (Reader r) where
   fmap f (Reader h) = Reader $ f . h
@@ -22,9 +20,9 @@ instance Monad (Reader r) where
 asks :: (r -> a) -> Reader r a
 asks = Reader
 
-data Person = Person { name :: String, age :: Int } deriving (Eq, Show)
+data Person = Person {name :: String, age :: Int} deriving (Eq, Show)
 
-data Dog = Dog { dogsName :: String, dogsAge :: Int } deriving (Eq, Show)
+data Dog = Dog {dogsName :: String, dogsAge :: Int} deriving (Eq, Show)
 
 getDog :: Reader Person Dog
 getDog = Dog <$> asks name <*> asks age
@@ -62,7 +60,6 @@ x2 = (,) <$> ys <*> zs
 
 x3 :: Integer -> (Maybe Integer, Maybe Integer)
 x3 = (,) <$> z' <*> z'
-
 
 summed :: Num c => (c, c) -> c
 summed = uncurry (+)

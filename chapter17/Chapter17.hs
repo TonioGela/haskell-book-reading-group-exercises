@@ -1,12 +1,13 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
 module Chapter17 () where
 
+import Control.Monad
+import Data.Bifunctor
 import Test.QuickCheck
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
-import Data.Bifunctor
-import Control.Monad
 
 ---------------
 ---Utilities---
@@ -23,7 +24,7 @@ fold f b (Cons h t) = f h (fold f b t)
 take' :: Int -> List a -> List a
 take' 0 _ = Nil
 take' _ Nil = Nil
-take' n (Cons a as) = Cons a (take' (n-1) as)
+take' n (Cons a as) = Cons a (take' (n - 1) as)
 
 concat' :: List (List a) -> List a
 concat' = fold append Nil
@@ -46,10 +47,8 @@ trigger = undefined
 ---List Applicative---
 ----------------------
 
-newtype Constant a b = Constant { getConstant :: a }
+newtype Constant a b = Constant {getConstant :: a}
   deriving (Eq, Show)
-
-
 
 data List a = Nil | Cons a (List a)
   deriving (Eq, Show)
@@ -61,16 +60,23 @@ instance Functor List where
 instance Applicative List where
   pure a = Cons a Nil
   (<*>) fs xs = flatMap (<$> xs) fs
-  ---flatMap $ \a -> fmap (flip ($) a)
+
+---flatMap $ \a -> fmap (flip ($) a)
 
 instance Arbitrary a => Arbitrary (List a) where
-  arbitrary =  frequency [(1, pure Nil)
-                         , (3, Cons <$> arbitrary <*> arbitrary)]
+  arbitrary =
+    frequency
+      [ (1, pure Nil),
+        (3, Cons <$> arbitrary <*> arbitrary)
+      ]
 
 instance Eq a => EqProp (List a) where (=-=) = eq
+
 checkList :: IO ()
-checkList = quickBatch $ applicative
-                         (trigger @List @String @String @String)
+checkList =
+  quickBatch $
+    applicative
+      (trigger @List @String @String @String)
 
 -------------------------
 ---ZipList Applicative---
@@ -81,6 +87,7 @@ newtype ZipList' a = ZipList' (List a)
 
 instance Functor ZipList' where
   fmap f (ZipList' xs) = ZipList' $ fmap f xs
+
 ---All'inizio pensavo pure fosse semplicement ZipList' . pure, ma questa
 ---versione non rispetta (tra le altre cose) pure id <*> xs == xs per liste
 ---con lunghezza maggiore di 1
@@ -94,15 +101,19 @@ instance Arbitrary a => Arbitrary (ZipList' a) where
 
 instance Eq a => EqProp (ZipList' a) where
   xs =-= ys = xs' `eq` ys'
-    where xs' = let (ZipList' l) = xs in take' 3000 l
-          ys' = let (ZipList' l) = ys in take' 3000 l
+    where
+      xs' = let (ZipList' l) = xs in take' 3000 l
+      ys' = let (ZipList' l) = ys in take' 3000 l
 
 checkZipList :: IO ()
-checkZipList = quickBatch $ applicative
-                            (trigger @ZipList'
-                                     @String
-                                     @Char
-                                     @String)
+checkZipList =
+  quickBatch $
+    applicative
+      ( trigger @ZipList'
+          @String
+          @Char
+          @String
+      )
 
 ---------------------
 ---Sum Applicative---
@@ -122,25 +133,29 @@ instance Applicative (Sum a) where
   (<*>) (Second f) (Second a) = Second $ f a
 
 instance (Arbitrary a, Arbitrary b) => Arbitrary (Sum a b) where
-  arbitrary = frequency [(1, First <$> arbitrary)
-                        ,(3, Second <$> arbitrary)]
+  arbitrary =
+    frequency
+      [ (1, First <$> arbitrary),
+        (3, Second <$> arbitrary)
+      ]
 
 instance (Eq a, Eq b) => EqProp (Sum a b) where (=-=) = eq
 
 checkSum :: IO ()
-checkSum = quickBatch $ applicative
-                        (trigger @(Sum String)
-                                 @String
-                                 @Char
-                                 @String)
+checkSum =
+  quickBatch $
+    applicative
+      ( trigger @(Sum String)
+          @String
+          @Char
+          @String
+      )
+
 ----------------------------
 ---Validation Applicative---
 ----------------------------
 
-
-
-
-data Prova a b = Prova { geta :: a, getb :: b }
+data Prova a b = Prova {geta :: a, getb :: b}
   deriving (Eq, Show)
 
 data Validation e a = Failure' e | Success' a
@@ -158,17 +173,23 @@ instance Monoid e => Applicative (Validation e) where
   (<*>) (Success' f) (Success' a) = Success' $ f a
 
 instance (Arbitrary e, Arbitrary a) => Arbitrary (Validation e a) where
-  arbitrary = frequency [(1, Failure' <$> arbitrary)
-                        ,(3, Success' <$> arbitrary)]
+  arbitrary =
+    frequency
+      [ (1, Failure' <$> arbitrary),
+        (3, Success' <$> arbitrary)
+      ]
 
 instance (Eq e, Eq a) => EqProp (Validation e a) where (=-=) = eq
 
 checkValidation :: IO ()
-checkValidation = quickBatch $ applicative
-                               (trigger @(Validation String)
-                                        @String
-                                        @Char
-                                        @String)
+checkValidation =
+  quickBatch $
+    applicative
+      ( trigger @(Validation String)
+          @String
+          @Char
+          @String
+      )
 
 -----------------------
 ---Chapter Exercises---
@@ -190,12 +211,16 @@ instance Arbitrary a => Arbitrary (Identity a) where
   arbitrary = Identity <$> arbitrary
 
 instance Eq a => EqProp (Identity a) where (=-=) = eq
+
 checkIdentity :: IO ()
-checkIdentity = quickBatch $ applicative
-                             (trigger @(Identity)
-                                      @String
-                                      @Char
-                                      @String)
+checkIdentity =
+  quickBatch $
+    applicative
+      ( trigger @(Identity)
+          @String
+          @Char
+          @String
+      )
 
 data Pair a = Pair a a deriving (Eq, Show)
 
@@ -212,12 +237,14 @@ instance Arbitrary a => Arbitrary (Pair a) where
 instance Eq a => EqProp (Pair a) where (=-=) = eq
 
 checkPair :: IO ()
-checkPair = quickBatch $ applicative
-                         (trigger @(Pair)
-                                  @String
-                                  @Char
-                                  @String)
-
+checkPair =
+  quickBatch $
+    applicative
+      ( trigger @(Pair)
+          @String
+          @Char
+          @String
+      )
 
 data Two a b = Two a b deriving (Eq, Show)
 
@@ -234,11 +261,14 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Two a b) where
 instance (Eq a, Eq b) => EqProp (Two a b) where (=-=) = eq
 
 checkTwo :: IO ()
-checkTwo = quickBatch $ applicative
-                        (trigger @(Two String)
-                                 @String
-                                 @Char
-                                 @String)
+checkTwo =
+  quickBatch $
+    applicative
+      ( trigger @(Two String)
+          @String
+          @Char
+          @String
+      )
 
 data Three a b c = Three a b c deriving (Eq, Show)
 
@@ -249,18 +279,23 @@ instance (Monoid a, Monoid b) => Applicative (Three a b) where
   pure = Three mempty mempty
   (<*>) (Three a b f) (Three a' b' c) = Three (a <> a') (b <> b') $ f c
 
-instance (Arbitrary a, Arbitrary b, Arbitrary c)
-        => Arbitrary (Three a b c) where
+instance
+  (Arbitrary a, Arbitrary b, Arbitrary c) =>
+  Arbitrary (Three a b c)
+  where
   arbitrary = Three <$> arbitrary <*> arbitrary <*> arbitrary
 
 instance (Eq a, Eq b, Eq c) => EqProp (Three a b c) where (=-=) = eq
 
 checkThree :: IO ()
-checkThree = quickBatch $ applicative
-                           (trigger @(Three String String)
-                                    @String
-                                    @Char
-                                    @String)
+checkThree =
+  quickBatch $
+    applicative
+      ( trigger @(Three String String)
+          @String
+          @Char
+          @String
+      )
 
 ---L'istanza di applicative dei tipi rimanenti si implementa sulla falsariga
 ---delle precedenti, quindi non le riporto.
@@ -290,21 +325,31 @@ instance Applicative Tree where
   (<*>) (Node l f r) (Node l' x r') = Node (l <*> l') (f x) (r <*> r')
 
 instance Arbitrary a => Arbitrary (Tree a) where
-   arbitrary = sized tree'
-     where tree' 0 = pure Leaf
-           tree' n = frequency [(1, pure Leaf)
-                               ,(3, Node <$> tree' (n `div` 2)
-                                         <*> arbitrary
-                                         <*> tree' (n `div` 2))]
+  arbitrary = sized tree'
+    where
+      tree' 0 = pure Leaf
+      tree' n =
+        frequency
+          [ (1, pure Leaf),
+            ( 3,
+              Node
+                <$> tree' (n `div` 2)
+                <*> arbitrary
+                <*> tree' (n `div` 2)
+            )
+          ]
 
 instance Eq a => EqProp (Tree a) where (=-=) = eq
 
 checkTree :: IO ()
-checkTree = quickBatch $ applicative
-                          (trigger @Tree
-                                   @String
-                                   @Char
-                                   @String)
+checkTree =
+  quickBatch $
+    applicative
+      ( trigger @Tree
+          @String
+          @Char
+          @String
+      )
 
 ---2---
 
@@ -324,19 +369,29 @@ instance Applicative TreeL where
 
 instance Arbitrary a => Arbitrary (TreeL a) where
   arbitrary = sized tree'
-    where tree' 0 = LeafL <$> arbitrary
-          tree' n = frequency [(1, LeafL <$> arbitrary)
-                              ,(3, NodeL <$> tree' (n `div` 2)
-                                         <*> tree' (n `div` 2))]
+    where
+      tree' 0 = LeafL <$> arbitrary
+      tree' n =
+        frequency
+          [ (1, LeafL <$> arbitrary),
+            ( 3,
+              NodeL
+                <$> tree' (n `div` 2)
+                <*> tree' (n `div` 2)
+            )
+          ]
 
 instance Eq a => EqProp (TreeL a) where (=-=) = eq
 
 checkTreeL :: IO ()
-checkTreeL = quickBatch $ applicative
-                           (trigger @TreeL
-                                    @String
-                                    @Char
-                                    @String)
+checkTreeL =
+  quickBatch $
+    applicative
+      ( trigger @TreeL
+          @String
+          @Char
+          @String
+      )
 
 ---3---
 
@@ -348,8 +403,11 @@ instance Functor Trie where
 
 instance Applicative Trie where
   pure x = Trie [(x, pure x)]
-  (<*>) (Trie fs) (Trie xs) = Trie $ (\(f, ft) (a, ta) -> (f a, ft <*> ta))
-                                     <$> fs <*> xs
+  (<*>) (Trie fs) (Trie xs) =
+    Trie $
+      (\(f, ft) (a, ta) -> (f a, ft <*> ta))
+        <$> fs
+        <*> xs
 
 instance Arbitrary a => Arbitrary (Trie a) where
   arbitrary = sized arbTrie
@@ -367,19 +425,22 @@ arbTrie n = do
 instance Eq a => EqProp (Trie a) where (=-=) = eq
 
 checkTrie :: IO ()
-checkTrie = quickBatch $ applicative
-                           (trigger @Trie
-                                    @Int
-                                    @Int
-                                    @Int)
+checkTrie =
+  quickBatch $
+    applicative
+      ( trigger @Trie
+          @Int
+          @Int
+          @Int
+      )
 
 ---4---
 
-newtype F a = F (Int -> (a,a))
-  deriving Show
+newtype F a = F (Int -> (a, a))
+  deriving (Show)
 
 instance Functor F where
-    fmap f (F g) = F $ \x -> let (a, b) = g x in (f a, f b)
+  fmap f (F g) = F $ \x -> let (a, b) = g x in (f a, f b)
 
 instance Applicative F where
   pure a = F $ const (a, a)
@@ -403,8 +464,6 @@ instance Functor C where
 instance Applicative C where
   pure a = C $ \h -> h a
   (<*>) (C ff) (C g) = C $ \h -> ff $ \f -> g $ h . f
+
 -- f :: a -> b è la variabile che assumo e di cui poi faccio il discard
 -- ff :: ((a -> b) -> Int) -> Int
-
-
-
