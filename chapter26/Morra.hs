@@ -1,30 +1,39 @@
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
+{-# OPTIONS_GHC -Wno-unused-do-bind #-}
 
-module Morra () where
+module Morra
+  ( askMove,
+    getMove,
+    getWinner,
+    mkMove,
+    mkPlayed,
+    mkPlayers,
+    playGame,
+    playRound,
+    updateScores,
+    Winner (..),
+    Move (..),
+  )
+where
 
 import Control.Monad.Cont (MonadIO (liftIO))
-import Control.Monad.Trans.State (StateT, modify)
+import Control.Monad.Trans.State (StateT, execStateT, get, modify)
 import System.Random (randomRIO)
 
-data MorraNumber = Zero | One | Two | Three | Four | Five
-  deriving (Eq, Ord, Enum, Show)
+type Played = Int
 
-randomMorraNumber :: IO MorraNumber
-randomMorraNumber = toEnum <$> randomRIO (0, 5)
-
-mkMorraNumber :: Int -> Maybe MorraNumber
-mkMorraNumber n
-  | n >= 0 && n <= 5 = Just $ toEnum n
+mkPlayed :: Int -> Maybe Played
+mkPlayed n
+  | n >= 0 && n <= 5 = Just n
   | otherwise = Nothing
 
-type Played = MorraNumber
-
-type Guessed = MorraNumber
+type Guessed = Int
 
 data Move = Move Guessed Played deriving (Eq, Show)
 
 mkMove :: Int -> Int -> Maybe Move
-mkMove guessed played = Move <$> mkMorraNumber guessed <*> mkMorraNumber played
+mkMove guessed played = Move guessed <$> mkPlayed played
 
 askMove :: IO Move
 askMove = do
@@ -39,40 +48,101 @@ askMove = do
       askMove
 
 mkRandomMove :: IO Move
-mkRandomMove = Move <$> randomMorraNumber <*> randomMorraNumber
+mkRandomMove = Move <$> randomGuessed <*> randomPlayed
+  where
+    randomGuessed = randomRIO (0, 10)
+    randomPlayed = randomRIO (0, 5)
 
-data Player = PlayerOne | PlayerTwo deriving (Eq, Show)
+data PlayerType = Human | AI deriving (Eq, Show, Read)
 
-data Score = Score Int Int deriving (Eq, Show)
+getMove :: PlayerType -> IO Move
+getMove Human = askMove
+getMove AI = mkRandomMove
 
-type Morra = StateT Score IO
+type Players = (PlayerType, PlayerType)
 
-updateScore :: Player -> Score -> Score
-updateScore PlayerOne (Score p1 p2) = Score (p1 + 1) p2
-updateScore PlayerTwo (Score p1 p2) = Score p1 (p2 + 1)
+getFirstPlayer :: Players -> PlayerType
+getFirstPlayer = fst
 
-getWinner :: Move -> Move -> Maybe Player
-getWinner (Move g1 p1) (Move g2 p2)
-  | g1 == p2 && g2 == p1 = Nothing
-  | g1 == p2 = Just PlayerOne
-  | g2 == p1 = Just PlayerTwo
-  | otherwise = Nothing
+getSecondPlayer :: Players -> PlayerType
+getSecondPlayer = snd
 
-playRound :: IO (Maybe Player)
+mkPlayers :: IO Players
+mkPlayers = do
+  putStrLn "Enter first player type (Human or AI):"
+  player1 <- read <$> getLine
+  putStrLn "Enter second player type (Human or AI):"
+  player2 <- read <$> getLine
+  return (player1, player2)
+
+type Scores = (Int, Int)
+
+data Winner = First | Second | Tie
+  deriving (Eq, Show)
+
+data GameState = GameState
+  { players :: Players,
+    scores :: Scores
+  }
+  deriving (Eq, Show)
+
+initialState :: IO GameState
+initialState = do
+  players <- mkPlayers
+  return $ GameState players (0, 0)
+
+getWinner :: Move -> Move -> Winner
+getWinner (Move guessed1 played1) (Move guessed2 played2)
+  | guessed1 == played1 + played2
+      && guessed2 == played1 + played2 =
+      Tie
+  | guessed1 == played1 + played2 = First
+  | guessed2 == played1 + played2 = Second
+  | otherwise = Tie
+
+updateScores :: Winner -> Scores -> Scores
+updateScores First (x, y) = (x + 1, y)
+updateScores Second (x, y) = (x, y + 1)
+updateScores Tie s = s
+
+type Morra = StateT GameState IO
+
+playRound :: Morra ()
 playRound = do
-  putStrLn "Player One:"
-  move1 <- askMove
-  putStrLn "Player Two:"
-  move2 <- mkRandomMove
-  putStrLn $ "Player One: " ++ show move1
-  putStrLn $ "Player Two: " ++ show move2
-  return $ getWinner move1 move2
+  GameState players scores <- get
+  let (player1, player2) = players
+  move1 <- liftIO $ getMove player1
+  move2 <- liftIO $ getMove player2
+  let winner = getWinner move1 move2
+  modify $ \s -> s {scores = updateScores winner scores}
 
-play :: Morra ()
-play = do
-  winner <- liftIO playRound
-  case winner of
-    Just player -> do
-      modify $ updateScore player
-      liftIO $ putStrLn $ "Player " ++ show player ++ " wins!"
-    Nothing -> liftIO $ putStrLn "It's a tie!"
+playGame :: Morra ()
+playGame = do
+  GameState _ scores <- get
+  let (score1, score2) = scores
+  if score1 == 5 || score2 == 5
+    then do
+      liftIO $
+        putStrLn $
+          "Game over! Final scores: "
+            ++ "Player 1 scored: "
+            ++ show score1
+            ++ "Player 2 scored"
+            ++ show score2
+      return ()
+    else do
+      liftIO $
+        putStrLn $
+          "Current score: "
+            ++ "Player 1: "
+            ++ show score1
+            ++ "Player 2 "
+            ++ show score2
+      playRound
+      playGame
+
+main :: IO ()
+main = do
+  putStrLn "Welcome to Morra!"
+  initialState >>= execStateT playGame
+  putStrLn "Thanks for playing!"
