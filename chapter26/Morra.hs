@@ -65,12 +65,6 @@ getMove AI = mkRandomMove
 
 type Players = (PlayerType, PlayerType)
 
-getFirstPlayer :: Players -> PlayerType
-getFirstPlayer = fst
-
-getSecondPlayer :: Players -> PlayerType
-getSecondPlayer = snd
-
 mkPlayers :: IO Players
 mkPlayers = do
   putStrLn "Enter first player type (Human or AI):"
@@ -120,28 +114,38 @@ playRound impureGet = do
   let winner = getWinner move1 move2
   modify $ \s -> s {scores = updateScores winner scores}
 
+winningScore :: Scores -> Bool
+winningScore (x, y) = x == 5 || y == 5
+
+winningMessage :: Scores -> String
+winningMessage (x, y) =
+  "Game over! Final scores: "
+    ++ "Player 1 scored: "
+    ++ show x
+    ++ "Player 2 scored: "
+    ++ show y
+
+inplayMessage :: Scores -> String
+inplayMessage (x, y) =
+  "Current score: "
+    ++ "Player 1: "
+    ++ show x
+    ++ "Player 2: "
+    ++ show y
+
 playGame :: Morra ()
 playGame = do
   GameState _ scores <- get
-  let (score1, score2) = scores
-  if score1 == 5 || score2 == 5
+  if winningScore scores
     then do
       liftIO $
         putStrLn $
-          "Game over! Final scores: "
-            ++ "Player 1 scored: "
-            ++ show score1
-            ++ "Player 2 scored"
-            ++ show score2
+          winningMessage scores
       return ()
     else do
       liftIO $
         putStrLn $
-          "Current score: "
-            ++ "Player 1: "
-            ++ show score1
-            ++ "Player 2 "
-            ++ show score2
+          inplayMessage scores
       playRound getMove >> playGame
 
 main :: IO ()
